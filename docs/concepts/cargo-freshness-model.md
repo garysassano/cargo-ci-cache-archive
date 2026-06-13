@@ -232,5 +232,6 @@ When Cargo can prove each unit is fresh, it does not invoke rustc.
 - [Build cache](https://doc.rust-lang.org/cargo/reference/build-cache.html)
 - [Cargo home](https://doc.rust-lang.org/cargo/guide/cargo-home.html)
 - [Build scripts and change detection](https://doc.rust-lang.org/cargo/reference/build-scripts.html#change-detection)
+- [Unstable checksum freshness](https://doc.rust-lang.org/nightly/cargo/reference/unstable.html#checksum-freshness)
 - [Environment variables](https://doc.rust-lang.org/cargo/reference/environment-variables.html)
 - [Profiles and incremental compilation](https://doc.rust-lang.org/cargo/reference/profiles.html#incremental)

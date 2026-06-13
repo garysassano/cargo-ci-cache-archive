@@ -12,7 +12,7 @@ Use this checklist when refreshing the archive or copying its examples into a li
 ## Cargo Cache Semantics
 
 - Re-check `Swatinem/rust-cache` release notes before changing the recommendation, especially around target keys, `cache-workspace-crates`, incremental state, and save cleanup behavior.
-- Re-check Cargo checksum freshness status before changing source-mtime guidance.
+- Re-check the official [Cargo checksum freshness documentation](https://doc.rust-lang.org/nightly/cargo/reference/unstable.html#checksum-freshness) and [tracking issue](https://github.com/rust-lang/cargo/issues/14136) before changing source-mtime guidance.
 - Keep the source-keyed target-cache workaround documented until upstream target keys include workspace source state or an equivalent mechanism exists.
 - Preserve the warning not to mix full filesystem snapshots with `rust-cache` on the same `target/` or `$CARGO_HOME` paths.
 
