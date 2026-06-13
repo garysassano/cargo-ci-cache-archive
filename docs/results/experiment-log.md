@@ -143,3 +143,54 @@ Decision:
 - Keep this workaround documented.
 - Do not select it as the default yet because it adds cache composition complexity.
 - Ask upstream `Swatinem/rust-cache` for source-keyed target-cache support.
+
+## Native `rust-cache` Target-Key Prototype
+
+A local `rust-cache` prototype added a native `target-key` input that splits Cargo
+home and target caches inside `rust-cache` itself. The target cache key includes a
+user-provided source fingerprint, while Cargo home keeps the existing dependency
+key strategy.
+
+Test shape:
+
+```text
+cached worktree checkout
+rust-cache with cache-targets=true
+cache-workspace-crates=true
+target-key=<build-mode>-<source-hash>
+build with explicit per-job CARGO_TARGET_DIR
+```
+
+Important result:
+
+- A seed run created the new source-keyed target caches.
+- A repeated run restored exact Cargo-home and target-cache hits for all tested
+  binary and UI jobs.
+- Cargo build phases were around 0.3 seconds.
+- No `Compiling` lines were emitted in the repeated run.
+
+Keying lesson:
+
+- The target key must include build-command semantics, not only source state.
+- Adding `--locked` changed Cargo freshness enough that the first run against the
+  old source-only target key rebuilt some workspace artifacts.
+- Prefixing the target key with a namespace such as `locked-v1-` created a new
+  lineage; after seeding that lineage, repeated runs were no-op again.
+
+Cargo flag lesson:
+
+- `--locked` is appropriate for CI artifact builds and should be part of the
+  target-key namespace when introduced.
+- `--locked` does not suppress `Updating crates.io index`; it only prevents
+  modifying `Cargo.lock`.
+- `--frozen` / `--offline` failed with the `rust-cache`-managed Cargo home,
+  because offline mode needs complete local registry/index state while
+  `rust-cache` intentionally prunes Cargo home.
+
+Decision:
+
+- Keep the external source-keyed target-cache workaround as the documented copyable
+  approach until native `target-key` support is available from upstream
+  `Swatinem/rust-cache`.
+- If native support lands upstream, update the examples to remove the separate
+  target `actions/cache` step and use `target-key` directly.
