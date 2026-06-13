@@ -53,7 +53,6 @@ jobs:
         with:
           workspaces: ${{ env.LOCAL_WORKSPACE }}/app -> ../../example-cargo-target
           cache-targets: false
-          cache-all-crates: true
           shared-key: example-cargo-home-v1
 
       - name: Compute source key

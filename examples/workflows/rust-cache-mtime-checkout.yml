@@ -52,8 +52,11 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: ${{ env.LOCAL_WORKSPACE }}/app -> ../../example-cargo-target
+          cache-all-crates: false
+          cache-bin: false
+          # Explicit although true by default: include the configured target directory.
           cache-targets: true
-          cache-all-crates: true
+          # Also retain matching target artifacts for workspace members such as crates/common.
           cache-workspace-crates: true
           shared-key: example-target-v1
 

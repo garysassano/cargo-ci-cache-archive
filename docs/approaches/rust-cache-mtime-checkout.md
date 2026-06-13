@@ -18,6 +18,99 @@ Swatinem/rust-cache restores Cargo home and target state
 Cargo builds with explicit CARGO_TARGET_DIR
 ```
 
+## Architecture
+
+The source-worktree cache and `Swatinem/rust-cache` preserve different inputs
+to Cargo's freshness decision:
+
+```mermaid
+flowchart TD
+    worktree_key[Compute cached-worktree key]
+    worktree_cache[(Cached Git worktree archive)]
+    restore_worktree[Restore previous worktree]
+    head_check{HEAD equals GITHUB_SHA?}
+    skip_checkout[Skip fetch and checkout]
+    update_checkout[Fetch and checkout in place]
+    stable_sources[Unchanged source files retain mtimes]
+    changed_sources[Changed source files receive new mtimes]
+
+    rust_key[Compute Swatinem/rust-cache key]
+    rust_cache[(Cargo cache archive)]
+    restore_rust[Restore Cargo home and target subset]
+    cargo_home[CARGO_HOME registry and Git state]
+    target[Target artifacts and fingerprints]
+
+    cargo[Cargo freshness decision]
+    build[Compile dirty units]
+    fresh[Reuse fresh units]
+    save_worktree[Save updated worktree on exact-key miss]
+    clean_rust[Swatinem/rust-cache cleanup]
+    save_rust[Save Swatinem/rust-cache entry on cache miss]
+
+    worktree_key --> worktree_cache --> restore_worktree --> head_check
+    head_check -->|yes| skip_checkout --> stable_sources
+    head_check -->|no| update_checkout
+    update_checkout --> stable_sources
+    update_checkout --> changed_sources
+
+    rust_key --> rust_cache --> restore_rust
+    restore_rust --> cargo_home
+    restore_rust --> target
+
+    stable_sources --> cargo
+    changed_sources --> cargo
+    cargo_home --> cargo
+    target --> cargo
+    cargo -->|proof complete| fresh
+    cargo -->|input changed or state missing| build
+
+    fresh --> save_worktree
+    build --> save_worktree
+    fresh --> clean_rust
+    build --> clean_rust
+    clean_rust --> save_rust
+```
+
+The cached worktree prevents unchanged source files from appearing newer than
+restored outputs. `Swatinem/rust-cache` independently restores Cargo home and
+a dependency-oriented target subset. Both are needed for this approach:
+stable source mtimes do not replace target fingerprints, and restored target
+state does not help if checkout rewrites every source mtime.
+
+When RunsOn Magic Cache backs `actions/cache`, it changes where the worktree
+and `Swatinem/rust-cache` archives are stored and transferred. It does not
+change the archive keys, extraction behavior, cleanup, or exact-hit save
+semantics shown above.
+
+## Recommended RunsOn Shape
+
+For the Cargo Lambda workflow discussed in this archive, use:
+
+```text
+RunsOn runner with Magic Cache / S3 backend
+actions/cache restores the mtime-preserving source worktree
+Swatinem/rust-cache restores Cargo home and target state
+taiki-e/install-action installs the pinned cargo-lambda release
+cargo lambda build runs with a stable explicit target directory
+```
+
+This keeps the established archive-cache approach and avoids EBS snapshot
+lifecycle complexity. RunsOn supplies the fast S3-backed cache transport;
+`Swatinem/rust-cache` still owns Cargo-aware path selection and save cleanup.
+
+For this shape:
+
+- Use `cache-all-crates: false`; taiki normally downloads a prebuilt
+  `cargo-lambda` release rather than compiling registry crates.
+- Use `cache-bin: false`; this workflow has no Cargo-registered installed
+  tools to preserve, and taiki's directly extracted binary is not reusable
+  through this input.
+- Use `cache-targets: true`.
+- Use `cache-workspace-crates: true` so matching workspace library artifacts
+  survive cleanup.
+- Keep `cargo-lambda` pinned and let taiki install it on each job unless its
+  setup time is separately measured as significant.
+
 ## Why It Works
 
 Normal checkout rewrites source mtimes. Cargo can treat rewritten source files as newer than restored target fingerprints, so local workspace crates rebuild even if contents are unchanged.
@@ -36,11 +129,42 @@ The cached worktree checkout avoids that false invalidation:
 - uses: Swatinem/rust-cache@v2
   with:
     workspaces: ./app -> ../../target-for-job
+    cache-all-crates: false
+    cache-bin: false
     cache-targets: true
-    cache-all-crates: true
     cache-workspace-crates: true
     shared-key: app-target-v1
 ```
+
+These settings control different parts of the action's restore and cleanup
+behavior. See
+[`Swatinem/rust-cache` Behavior](../concepts/rust-cache-behavior.md) for exact
+true/false behavior, workspace/path-dependency examples, cleanup details, and
+upstream source links.
+
+- `cache-all-crates: false` keeps registry cleanup limited to the current
+  dependency graph. Set it to `true` only when another step downloads
+  registry crates outside the current dependency graph, such as a tool built
+  through `cargo install` or an install action's source-build fallback.
+- `cache-bin: false` avoids caching Cargo-installed binaries because this
+  workflow has none that `rust-cache` can reuse.
+- `cache-targets: true` includes the configured target directory; this is the
+  upstream default and is explicit here because target state is part of the
+  approach.
+- `cache-workspace-crates: true` retains matching target artifacts for Cargo
+  workspace members, including normal in-tree path crates.
+
+Installing `cargo-lambda` through `taiki-e/install-action` normally downloads
+a prebuilt release binary; it does not require `cache-all-crates: true`. It
+also does not benefit from `cache-bin: true`: a binary extracted into
+`$CARGO_HOME/bin` lacks Cargo's installed-crate metadata and is removed by
+`rust-cache` cleanup, while taiki's fallback install directory is outside
+Cargo home. See
+[`rust-cache` behavior](../concepts/rust-cache-behavior.md#tool-example-cargo-lambda)
+for the distinction between registry crates and installed Cargo binaries.
+
+The options still do not produce a complete target snapshot, and exact cache
+hits are not replaced in the post step.
 
 Use a stable explicit target directory:
 

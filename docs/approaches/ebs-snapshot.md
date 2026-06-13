@@ -19,6 +19,46 @@ build in a stable path
 save new snapshot after build
 ```
 
+## Architecture
+
+```mermaid
+flowchart TD
+    lookup[Select snapshot stream by repository, branch, key, path, and version]
+    existing{Matching snapshot exists?}
+    restore[Create EBS volume from snapshot]
+    blank[Create blank EBS volume]
+    mount[Mount snapshot root]
+    workspace[Workspace and source mtimes]
+    cargo_home[CARGO_HOME]
+    target[Target artifacts, dep-info, and fingerprints]
+    helpers[Cargo helper caches]
+    build[Cargo build]
+    scrub[Scrub credentials and mark successful state]
+    detach[Unmount and detach volume]
+    save{Save policy permits snapshot?}
+    snapshot[Create next EBS snapshot]
+    delete[Delete temporary volume]
+
+    lookup --> existing
+    existing -->|yes| restore --> mount
+    existing -->|no| blank --> mount
+    mount --> workspace
+    mount --> cargo_home
+    mount --> target
+    mount --> helpers
+    workspace --> build
+    cargo_home --> build
+    target --> build
+    helpers --> build
+    build --> scrub --> detach --> save
+    save -->|yes| snapshot
+    save -->|no| delete
+```
+
+A filesystem snapshot preserves the mounted subtree as a unit. It does not
+know Cargo semantics; the workflow must place the workspace, Cargo home,
+target directory, and relevant helper caches under the snapshot root.
+
 ## Why It Works
 
 Cargo freshness depends on a large set of mutually consistent files and metadata:

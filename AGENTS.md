@@ -20,6 +20,7 @@ only the pages relevant to the task instead of loading the entire archive.
 | Explain Cargo freshness/no-op behavior | `docs/concepts/cargo-freshness-model.md` |
 | Map Cargo state paths to cache coverage | `docs/concepts/cargo-path-coverage.md` |
 | Explain cache primitives | `docs/concepts/cache-primitives.md` |
+| Explain `Swatinem/rust-cache` inputs and cleanup | `docs/concepts/rust-cache-behavior.md` |
 | Diagnose rebuilds | `docs/operations/diagnosing-rebuilds.md` |
 | Review measured evidence | `docs/results/empirical-results.md` |
 | Review experiment chronology | `docs/results/experiment-log.md` |
@@ -49,6 +50,7 @@ and verify the relevant upstream documentation.
 - Keep empirical numbers in `docs/results/empirical-results.md`.
 - Keep chronological experiment history in `docs/results/experiment-log.md`.
 - Keep diagnostic procedures in `docs/operations/diagnosing-rebuilds.md`.
+- Keep `Swatinem/rust-cache` input and cleanup semantics in `docs/concepts/rust-cache-behavior.md`.
 - Keep copyable workflow examples in `examples/workflows/`.
 - Link to canonical pages instead of repeating long tables or result summaries.
 

@@ -19,6 +19,7 @@ Read only the references needed for the task:
 | Choose or compare approaches | [Approach comparison](../../../docs/approaches/README.md) |
 | Explain Cargo freshness | [Cargo freshness model](../../../docs/concepts/cargo-freshness-model.md) |
 | Map state paths to cache coverage | [Cargo path coverage](../../../docs/concepts/cargo-path-coverage.md) |
+| Explain `Swatinem/rust-cache` inputs or cleanup | [`rust-cache` behavior](../../../docs/concepts/rust-cache-behavior.md) |
 | Diagnose rebuilds | [Diagnosing rebuilds](../../../docs/operations/diagnosing-rebuilds.md) |
 | Review measured evidence | [Empirical results](../../../docs/results/empirical-results.md) |
 | Review experiment chronology | [Experiment log](../../../docs/results/experiment-log.md) |

@@ -17,7 +17,7 @@ This page lists the Cargo paths that matter between builds and how the major CI 
 | `$CARGO_HOME/registry/index` | Registry metadata | Covered and cleaned | Covered if `CARGO_HOME` is under snapshot root |
 | `$CARGO_HOME/git/db` | Git dependency bare repos | Covered and cleaned | Covered if `CARGO_HOME` is under snapshot root |
 | `$CARGO_HOME/git/checkouts` | Git dependency source trees | Covered and cleaned for used refs | Covered if `CARGO_HOME` is under snapshot root |
-| `$CARGO_HOME/bin` | Cargo-installed binaries | Covered if `cache-bin=true` | Covered if `CARGO_HOME` is under snapshot root |
+| `$CARGO_HOME/bin` | Cargo-installed binaries | Covered if `cache-bin=true` and represented in Cargo's installed-crate metadata; directly extracted binaries are removed during save cleanup | Covered if `CARGO_HOME` is under snapshot root |
 | `$XDG_CACHE_HOME/cargo-zigbuild` | Cargo helper cache/state | Not covered unless separately cached | Covered if `XDG_CACHE_HOME` is under snapshot root |
 | `target/<profile>/deps/*.rlib` | Compiled library artifacts | Dependency-oriented; workspace artifacts require `cache-workspace-crates` and still follow `rust-cache` key behavior | Covered |
 | `target/<profile>/deps/*.rmeta` | Rust metadata for downstream crates | Dependency-oriented | Covered |
@@ -32,6 +32,9 @@ This page lists the Cargo paths that matter between builds and how the major CI 
 ## Save Behavior
 
 `Swatinem/rust-cache` restore and save behavior is intentionally not symmetric. On save, it prunes state before uploading the archive.
+See [`Swatinem/rust-cache` Behavior](rust-cache-behavior.md) for input defaults,
+true/false examples, and the exact cleanup rules used by the documented
+approaches.
 
 Important `rust-cache` save behavior:
 
