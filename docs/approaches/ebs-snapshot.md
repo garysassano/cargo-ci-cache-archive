@@ -7,6 +7,8 @@ EBS snapshot-style filesystem restore is the strongest approach for reproducing 
 | File | Purpose |
 | --- | --- |
 | [Workflow example](../../examples/workflows/ebs-snapshot.yml) | Generic snapshot-root layout for workspace, Cargo home, target, and helper caches. |
+| [Snapshot action](../../examples/actions/snapshot/README.md) | Local RunsOn snapshot fork that supports keyed snapshot streams and smart saves. |
+| [Cargo Lambda snapshot matrix](../../examples/workflows/cargo-lambda-snapshot-matrix.yml) | Sanitized matrix workflow using per-job snapshot keys and smart-save markers. |
 
 ## Design
 
@@ -48,6 +50,8 @@ For `runs-on/snapshot`-style actions, the snapshot path must be absolute. The te
 Restore the snapshot before checking out source into the mounted root. The checkout step must avoid rewriting unchanged files; otherwise Cargo can still see source files as newer than restored target metadata.
 
 Do not use `Swatinem/rust-cache` for the same `target/` or `$CARGO_HOME` paths inside the snapshot. Its restore/post cleanup can rewrite or prune state that the snapshot approach depends on preserving.
+
+The local snapshot fork added key-based snapshot streams, path-scoped identity, restore-key fallback, `save: auto`, `save-if: git-paths-changed`, save markers, retention tags, and snapshot pruning.
 
 ## Strengths
 

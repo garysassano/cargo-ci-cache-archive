@@ -1,0 +1,110 @@
+name: S3 Files Mount
+description: Install the S3 Files mount helper with caching and mount an S3 Files filesystem.
+
+inputs:
+  file-system-id:
+    description: S3 Files file system ID.
+    required: true
+  access-point-id:
+    description: Optional S3 Files access point ID.
+    required: false
+    default: ""
+  mount-path:
+    description: Absolute local mount path.
+    required: true
+  extra-mount-options:
+    description: Optional comma-delimited mount options appended after accesspoint.
+    required: false
+    default: ""
+  cache-version:
+    description: Manual invalidation version for cached installer artifacts.
+    required: false
+    default: v1
+  cache-suffix:
+    description: Optional suffix to separate runner images or OS versions.
+    required: false
+    default: ubuntu24
+
+runs:
+  using: composite
+  steps:
+    - name: Cache S3 Files client installer artifacts
+      uses: actions/cache@v5
+      with:
+        path: ~/.cache/s3-files-mount
+        key: s3-files-mount-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cache-suffix }}-${{ inputs.cache-version }}
+
+    - name: Install S3 Files client
+      shell: bash
+      env:
+        CACHE_DIR: ~/.cache/s3-files-mount
+      run: |
+        set -euo pipefail
+        cache_dir="${CACHE_DIR/#\~/$HOME}"
+        deb_dir="$cache_dir/debs"
+        pip_cache_dir="$cache_dir/pip"
+        installer="$cache_dir/efs-utils-installer.sh"
+        mkdir -p "$deb_dir" "$pip_cache_dir"
+
+        if ! command -v mount.s3files >/dev/null 2>&1; then
+          shopt -s nullglob
+          debs=("$deb_dir"/amazon-efs-utils_*.deb)
+          shopt -u nullglob
+
+          if [ "${#debs[@]}" -gt 0 ]; then
+            sudo apt-get install -y -qq "${debs[0]}" || {
+              sudo apt-get update -qq
+              sudo apt-get install -y -qq "${debs[0]}"
+            }
+          else
+            if [ ! -s "$installer" ]; then
+              curl -fsSL https://amazon-efs-utils.aws.com/efs-utils-installer.sh -o "$installer"
+            fi
+            sudo sh "$installer" --install
+            if command -v apt-get >/dev/null 2>&1; then
+              (cd "$deb_dir" && apt-get download amazon-efs-utils) || true
+            fi
+          fi
+        fi
+
+        if ! python3 -c 'import botocore' >/dev/null 2>&1; then
+          python3 -m pip install --user --cache-dir "$pip_cache_dir" --break-system-packages botocore
+        fi
+
+        command -v mount.s3files >/dev/null 2>&1
+
+    - name: Mount S3 Files
+      shell: bash
+      env:
+        FILE_SYSTEM_ID: ${{ inputs.file-system-id }}
+        ACCESS_POINT_ID: ${{ inputs.access-point-id }}
+        MOUNT_PATH: ${{ inputs.mount-path }}
+        EXTRA_MOUNT_OPTIONS: ${{ inputs.extra-mount-options }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "$FILE_SYSTEM_ID" ] || [ "${FILE_SYSTEM_ID#fs-}" = "$FILE_SYSTEM_ID" ]; then
+          echo "::error::file-system-id must be an S3 Files file system ID like fs-..."
+          exit 1
+        fi
+        if [ -z "$MOUNT_PATH" ] || [ "${MOUNT_PATH#/}" = "$MOUNT_PATH" ]; then
+          echo "::error::mount-path must be absolute"
+          exit 1
+        fi
+
+        sudo mkdir -p "$MOUNT_PATH"
+        if ! mountpoint -q "$MOUNT_PATH"; then
+          mount_options="$EXTRA_MOUNT_OPTIONS"
+          if [ -n "$ACCESS_POINT_ID" ]; then
+            mount_options="accesspoint=$ACCESS_POINT_ID${mount_options:+,$mount_options}"
+          fi
+
+          if [ -n "$mount_options" ]; then
+            sudo mount -t s3files -o "$mount_options" "$FILE_SYSTEM_ID" "$MOUNT_PATH"
+          else
+            sudo mount -t s3files "$FILE_SYSTEM_ID:/" "$MOUNT_PATH"
+          fi
+        fi
+
+        mountpoint -q "$MOUNT_PATH"
+        findmnt --mountpoint "$MOUNT_PATH"

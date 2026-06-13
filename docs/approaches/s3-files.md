@@ -7,6 +7,7 @@ S3 Files was tested as a shared filesystem for Cargo target and registry state. 
 | File | Purpose |
 | --- | --- |
 | [Workflow example](../../examples/workflows/s3-files-cargo-target.yml) | Generic S3 Files target-cache experiment shape. |
+| [S3 Files mount action](../../examples/actions/s3-files-mount/action.yml) | Composite action for installing the S3 Files mount helper and mounting a file system. |
 
 ## Goal
 

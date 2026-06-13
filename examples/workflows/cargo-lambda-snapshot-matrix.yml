@@ -1,0 +1,147 @@
+name: Cargo Lambda Matrix With Snapshot Build State
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: cargo-lambda-snapshot-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-lambdas:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: runs-on=${{ github.run_id }}-${{ matrix.lambda.name }}/cpu=16/family=m8azn/image=ubuntu24-full-x64/extras=s3-cache
+
+    strategy:
+      fail-fast: false
+      matrix:
+        lambda:
+          - { name: api, binary: example_api }
+          - { name: worker, binary: example_worker }
+          - { name: callback, binary: example_callback }
+
+    env:
+      SNAPSHOT_ROOT: /mnt/example-cargo-snapshot
+      SNAPSHOT_WORKSPACE: /mnt/example-cargo-snapshot/workspace
+      SNAPSHOT_CARGO_HOME: /mnt/example-cargo-snapshot/cargo-home
+      SNAPSHOT_CARGO_TARGET_DIR: /mnt/example-cargo-snapshot/workspace/app/target
+      SNAPSHOT_XDG_CACHE_HOME: /mnt/example-cargo-snapshot/xdg-cache
+      SNAPSHOT_SAVE_MARKER: /mnt/example-cargo-snapshot/.runs-on-snapshot/save-marker
+      LAMBDA_ARTIFACT_PATH: ${{ github.workspace }}/artifacts/lambdas/${{ matrix.lambda.name }}
+
+    steps:
+      - name: Setup RunsOn Magic Cache
+        uses: runs-on/action@v2
+
+      - name: Checkout workflow actions
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            examples/actions/cached-worktree-checkout
+            examples/actions/snapshot
+
+      - name: Restore Cargo snapshot
+        id: cargo-snapshot
+        uses: ./examples/actions/snapshot
+        with:
+          path: ${{ env.SNAPSHOT_ROOT }}
+          key: cargo-lambda-${{ matrix.lambda.name }}-release-arm64
+          volume_size: 20
+          retention-days: 10
+          keep-last-snapshots: 2
+          save: auto
+          save-if: git-paths-changed
+          wait-for-cleanup: false
+          save-policy-name: cargo-lambda-source
+          save-policy-version: v1
+          save-marker-file: ${{ env.SNAPSHOT_SAVE_MARKER }}
+          git-repository: ${{ env.SNAPSHOT_WORKSPACE }}
+          git-head: ${{ github.sha }}
+          git-paths: |
+            app/Cargo.lock
+            app/Cargo.toml
+            app/.cargo/**
+            app/bins/${{ matrix.lambda.binary }}/**
+            app/crates/**
+            app/libs/**
+
+      - name: Configure snapshot paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo chown "$USER:$USER" "$SNAPSHOT_ROOT"
+          mkdir -p "$SNAPSHOT_WORKSPACE" "$SNAPSHOT_CARGO_HOME/bin" "$SNAPSHOT_XDG_CACHE_HOME"
+          sudo rm -f "$SNAPSHOT_SAVE_MARKER"
+          echo "$SNAPSHOT_CARGO_HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Configure private Cargo registry
+        env:
+          CARGO_HOME: ${{ env.SNAPSHOT_CARGO_HOME }}
+        run: |
+          echo "Replace this step with registry credential setup if the workspace uses private crates."
+
+      - name: Checkout cached worktree inside snapshot root
+        uses: ./examples/actions/cached-worktree-checkout
+        with:
+          path: ${{ env.SNAPSHOT_WORKSPACE }}
+          sparse-paths: |
+            app
+            .github
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+          use-cache: false
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+          targets: aarch64-unknown-linux-gnu
+
+      - name: Install cargo-lambda
+        uses: taiki-e/install-action@v2
+        env:
+          CARGO_HOME: ${{ env.SNAPSHOT_CARGO_HOME }}
+        with:
+          tool: cargo-lambda@1.9.1
+
+      - name: Build Lambda binary
+        working-directory: ${{ env.SNAPSHOT_WORKSPACE }}/app
+        env:
+          CARGO_HOME: ${{ env.SNAPSHOT_CARGO_HOME }}
+          CARGO_TARGET_DIR: ${{ env.SNAPSHOT_CARGO_TARGET_DIR }}
+          XDG_CACHE_HOME: ${{ env.SNAPSHOT_XDG_CACHE_HOME }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$LAMBDA_ARTIFACT_PATH"
+          cargo lambda build \
+            --lambda-dir "$LAMBDA_ARTIFACT_PATH" \
+            --bin "${{ matrix.lambda.binary }}" \
+            --flatten "${{ matrix.lambda.binary }}" \
+            --release \
+            --arm64
+
+      - name: Scrub Cargo credentials before snapshot
+        if: always()
+        env:
+          CARGO_HOME: ${{ env.SNAPSHOT_CARGO_HOME }}
+        run: |
+          rm -f "$CARGO_HOME/credentials" "$CARGO_HOME/credentials.toml" "$CARGO_HOME/config.toml"
+
+      - name: Upload Lambda artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.lambda.name }}
+          path: ${{ env.LAMBDA_ARTIFACT_PATH }}
+          compression-level: 0
+
+      - name: Mark Lambda snapshot safe to save
+        run: |
+          sudo mkdir -p "$(dirname "$SNAPSHOT_SAVE_MARKER")"
+          printf 'save=true\n' | sudo tee "$SNAPSHOT_SAVE_MARKER" > /dev/null

@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: runs-on=${{ github.run_id }}-cargo-snapshot/cpu=16/family=m8a/image=ubuntu24-full-x64
 
     env:
       SNAPSHOT_ROOT: /mnt/build-snapshot
@@ -16,6 +16,7 @@ jobs:
       CARGO_HOME: /mnt/build-snapshot/cargo-home
       CARGO_TARGET_DIR: /mnt/build-snapshot/workspace/app/target
       XDG_CACHE_HOME: /mnt/build-snapshot/xdg-cache
+      SNAPSHOT_SAVE_MARKER: /mnt/build-snapshot/.runs-on-snapshot/save-marker
 
     defaults:
       run:
@@ -27,11 +28,30 @@ jobs:
         with:
           sparse-checkout: |
             examples/actions/cached-worktree-checkout
+            examples/actions/snapshot
 
       - name: Restore EBS snapshot
+        uses: ./examples/actions/snapshot
+        with:
+          path: ${{ env.SNAPSHOT_ROOT }}
+          key: cargo-workspace-example
+          volume_size: 20
+          save: auto
+          save-if: git-paths-changed
+          save-marker-file: ${{ env.SNAPSHOT_SAVE_MARKER }}
+          git-repository: ${{ env.SNAPSHOT_WORKSPACE }}
+          git-head: ${{ github.sha }}
+          git-paths: |
+            app/Cargo.lock
+            app/Cargo.toml
+            app/.cargo/**
+            app/src/**
+
+      - name: Configure snapshot paths
         run: |
-          echo "Replace this step with the runner/provider action that restores and mounts an EBS snapshot at $SNAPSHOT_ROOT."
+          sudo chown "$USER:$USER" "$SNAPSHOT_ROOT"
           mkdir -p "$SNAPSHOT_WORKSPACE" "$CARGO_HOME" "$CARGO_TARGET_DIR" "$XDG_CACHE_HOME"
+          sudo rm -f "$SNAPSHOT_SAVE_MARKER"
 
       - name: Checkout cached worktree inside snapshot root
         uses: ./examples/actions/cached-worktree-checkout
@@ -50,6 +70,7 @@ jobs:
         run: |
           rm -f "$CARGO_HOME/credentials.toml" "$CARGO_HOME/credentials"
 
-      - name: Save EBS snapshot
-        if: always()
-        run: echo "Replace this step with the runner/provider action that unmounts, detaches, and snapshots $SNAPSHOT_ROOT."
+      - name: Mark snapshot safe to save
+        run: |
+          sudo mkdir -p "$(dirname "$SNAPSHOT_SAVE_MARKER")"
+          printf 'save=true\n' | sudo tee "$SNAPSHOT_SAVE_MARKER" > /dev/null

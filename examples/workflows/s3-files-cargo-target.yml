@@ -2,13 +2,23 @@ name: S3 Files Cargo Target Experiment
 
 on:
   workflow_dispatch:
+    inputs:
+      file_system_id:
+        description: S3 Files file system ID, for example fs-0123456789abcdef0
+        required: true
+        type: string
+      access_point_id:
+        description: Optional S3 Files access point ID
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: runs-on=${{ github.run_id }}-s3-files/cpu=12/family=m8azn/image=ubuntu24-full-x64/extras=s3-cache
 
     env:
       S3_FILES_MOUNT: /mnt/s3-files
@@ -20,9 +30,14 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Mount S3 Files
-        run: |
-          echo "Replace this step with S3 Files mount helper setup and mount command."
-          mkdir -p "$S3_FILES_MOUNT" "$CARGO_TARGET_DIR" "$CARGO_HOME"
+        uses: ./examples/actions/s3-files-mount
+        with:
+          file-system-id: ${{ inputs.file_system_id }}
+          access-point-id: ${{ inputs.access_point_id }}
+          mount-path: ${{ env.S3_FILES_MOUNT }}
+
+      - name: Configure S3 Files paths
+        run: mkdir -p "$CARGO_TARGET_DIR" "$CARGO_HOME"
 
       - name: Optional prewarm
         run: |
@@ -36,4 +51,4 @@ jobs:
 
       - name: Unmount S3 Files
         if: always()
-        run: echo "Replace this step with unmount cleanup."
+        run: sudo umount "$S3_FILES_MOUNT" || true

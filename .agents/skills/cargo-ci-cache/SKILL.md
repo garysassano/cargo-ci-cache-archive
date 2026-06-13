@@ -9,8 +9,8 @@ Use this skill to apply the cache research archived in this repository to Rust/C
 
 ## Repository References
 
-This is a repository-scoped skill. Resolve the linked references relative to this
-`SKILL.md`; do not assume `docs/` or `examples/` exists inside the skill directory.
+This is a repository-scoped skill. Resolve links relative to this `SKILL.md`;
+do not assume `docs/` or `examples/` exists inside the skill directory.
 
 Read only the references needed for the task:
 
@@ -21,7 +21,10 @@ Read only the references needed for the task:
 | Map state paths to cache coverage | [Cargo path coverage](../../../docs/concepts/cargo-path-coverage.md) |
 | Diagnose rebuilds | [Diagnosing rebuilds](../../../docs/operations/diagnosing-rebuilds.md) |
 | Review measured evidence | [Empirical results](../../../docs/results/empirical-results.md) |
-| Copy workflow shapes | [Examples](../../../examples/README.md) |
+| Review experiment chronology | [Experiment log](../../../docs/results/experiment-log.md) |
+| Copy workflow or action shapes | [Examples](../../../examples/README.md) |
+| Work on the snapshot fork | [Snapshot action contract](../../../examples/actions/snapshot/README.md) |
+| Work on S3 Files mounting | [S3 Files approach](../../../docs/approaches/s3-files.md) |
 | Refresh recommendations or versions | [Maintenance checklist](../../../docs/operations/maintenance-checklist.md) |
 
 ## Application Workflow
@@ -113,12 +116,20 @@ XDG_CACHE_HOME=/mnt/build-snapshot/xdg-cache
 
 Do not put unrelated setup-action caches or large toolchain downloads under the snapshot root unless deliberately snapshotting them. Scrub credential-bearing files before snapshot save.
 
+For the local RunsOn snapshot fork, use the
+[action contract](../../../examples/actions/snapshot/README.md) and the
+[Cargo Lambda matrix workflow](../../../examples/workflows/cargo-lambda-snapshot-matrix.yml).
+Preserve keyed snapshot streams, path-scoped identity, cleanup behavior, and
+smart-save marker ordering when adapting it.
+
 ## S3 Files Rule
 
 S3 Files can present S3 buckets as shared file systems, but this archive rejected it for Cargo target no-op state. Cargo can become logically clean on S3 Files while still spending time traversing many small metadata, fingerprint, dep-info, and build-script files remotely.
 
 Use the [S3 Files experiment record](../../../docs/approaches/s3-files.md)
-only as background for non-Cargo shared filesystem workloads.
+and [mount action](../../../examples/actions/s3-files-mount/action.yml) only as
+experiment references or as background for non-Cargo shared filesystem
+workloads.
 
 ## Updating This Archive
 
@@ -129,4 +140,4 @@ When editing this repository:
 - Keep chronological history in [the experiment log](../../../docs/results/experiment-log.md).
 - Keep procedures in [`docs/operations/`](../../../docs/operations/README.md).
 - Keep examples generic under [`examples/`](../../../examples/README.md).
-- Run `git diff --check`, `actionlint examples/workflows/*.yml`, and YAML parsing after workflow edits.
+- Run the validation commands in the repository `AGENTS.md`.

@@ -21,6 +21,7 @@ Use this checklist when refreshing the archive or copying its examples into a li
 - Re-check current S3 Files docs before using the S3 Files page for new experiments.
 - Re-check `runs-on/snapshot` inputs and snapshot identity behavior before copying the snapshot example.
 - Keep credential scrubbing guidance on any snapshot layout that places `$CARGO_HOME` under the snapshot root.
+- Keep snapshot and S3 Files local action examples generic; do not reintroduce app-specific names, secrets, or runner labels.
 
 ## Results Hygiene
 

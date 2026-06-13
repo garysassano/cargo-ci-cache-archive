@@ -5,9 +5,9 @@ This repository archives Rust/Cargo CI cache research, decisions, results, and c
 ## Agent Skill
 
 Use `.agents/skills/cargo-ci-cache/SKILL.md` for tasks that apply this archive
-to a Rust CI workflow, compare cache strategies, or diagnose Cargo rebuilds.
-The skill is repository-scoped and links back to the canonical documents and
-examples in this repository.
+to a Rust CI workflow, compare cache strategies, diagnose Cargo rebuilds, or
+modify the local snapshot and S3 Files action examples. The skill is
+repository-scoped and links back to canonical documents and examples.
 
 For simple repository maintenance, use the routing table below directly. Read
 only the pages relevant to the task instead of loading the entire archive.
@@ -25,6 +25,8 @@ only the pages relevant to the task instead of loading the entire archive.
 | Review experiment chronology | `docs/results/experiment-log.md` |
 | Refresh examples and assumptions | `docs/operations/maintenance-checklist.md` |
 | Copy workflow shapes | `examples/README.md` and `examples/workflows/` |
+| Understand the local snapshot fork | `examples/actions/snapshot/README.md` |
+| Understand the S3 Files mount action | `examples/actions/s3-files-mount/action.yml` |
 
 ## Current Conclusions
 
@@ -66,11 +68,12 @@ Run these checks after relevant edits:
 ```bash
 git diff --check
 actionlint examples/workflows/*.yml
-yq eval-all --exit-status 'true' examples/workflows/*.yml
+yq eval-all --exit-status 'true' examples/workflows/*.yml examples/actions/*/action.yml
+(cd examples/actions/snapshot && go test ./...)
 ```
 
-If `actionlint` or `yq` is unavailable, say so and use another parser declared
-in `~/.config/mise/config.toml`.
+If `actionlint`, `yq`, or `go` is unavailable, say so and use a compatible
+tool declared in `~/.config/mise/config.toml`.
 
 ## Scope
 
