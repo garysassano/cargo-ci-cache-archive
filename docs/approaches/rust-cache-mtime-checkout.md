@@ -110,16 +110,16 @@ behavior. See
 true/false behavior, workspace/path-dependency examples, cleanup details, and
 upstream source links.
 
-- Leave `cache-all-crates` at its `false` default unless another step downloads
-  registry crates outside the current dependency graph, such as a tool built
-  through `cargo install` or an install action's source-build fallback.
-- Set `cache-bin` according to whether the workflow has Cargo-registered
-  installed binaries to preserve.
 - `cache-targets: true` includes the configured target directory; this is the
   upstream default and is explicit here because target state is part of the
   approach.
 - `cache-workspace-crates: true` retains matching target artifacts for Cargo
   workspace members, including normal in-tree path crates.
+- Leave `cache-all-crates` at its `false` default unless another step downloads
+  registry crates outside the current dependency graph, such as a tool built
+  through `cargo install` or an install action's source-build fallback.
+- Keep the `cache-bin: true` default when another step installs
+  Cargo-registered binaries. Set it to `false` when the workflow has none.
 
 The options still do not produce a complete target snapshot, and exact cache
 hits are not replaced in the post step.

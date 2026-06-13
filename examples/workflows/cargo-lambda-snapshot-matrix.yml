@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build-lambdas:
     if: github.actor != 'dependabot[bot]'
-    runs-on: runs-on=${{ github.run_id }}-${{ matrix.lambda.name }}/cpu=16/family=m8azn/image=ubuntu24-full-x64/extras=s3-cache
+    runs-on: runs-on=${{ github.run_id }}-${{ matrix.lambda.name }}/cpu=16/family=m8azn/image=ubuntu24-full-x64
 
     strategy:
       fail-fast: false
@@ -34,9 +34,6 @@ jobs:
       LAMBDA_ARTIFACT_PATH: ${{ github.workspace }}/artifacts/lambdas/${{ matrix.lambda.name }}
 
     steps:
-      - name: Setup RunsOn Magic Cache
-        uses: runs-on/action@v2
-
       - name: Checkout workflow actions
         uses: actions/checkout@v6
         with:

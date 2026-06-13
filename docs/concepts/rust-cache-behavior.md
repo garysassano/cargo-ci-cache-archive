@@ -103,16 +103,25 @@ cache-targets: true
 cache-workspace-crates: true
 ```
 
-- Keep `cache-all-crates` at `false` unless the workflow downloads registry crates
-  outside the workspace dependency graph, such as a tool compiled through
-  `cargo install` or an install action's source-build fallback.
-- Set `cache-bin` according to whether the workflow has Cargo-registered
-  installed tools to preserve.
+These two inputs describe the Cargo state the approach intends to reuse:
+
 - Keep `cache-targets: true` because the approach needs target metadata and
   artifacts in addition to stable source mtimes. It is already the default,
   but writing it explicitly makes the architecture clear.
 - Use `cache-workspace-crates: true` when repeated-run reuse of workspace
   library artifacts is desired.
+
+Choose the remaining inputs from the other steps in the workflow:
+
+- Keep `cache-all-crates` at `false` unless the workflow downloads registry
+  crates outside the workspace dependency graph, such as a tool compiled
+  through `cargo install` or an install action's source-build fallback.
+- Keep the `cache-bin: true` default when the workflow has Cargo-registered
+  installed tools to preserve. Set it to `false` when it does not.
+
+These decisions are independent of the `actions/cache` backend. GitHub's
+hosted cache service, RunsOn Magic Cache, and another compatible backend do
+not change what `rust-cache` selects or removes.
 
 These options do not guarantee a complete or current target snapshot. An exact
 cache hit is not replaced during the post step, and the target key does not
@@ -128,8 +137,8 @@ by Rust crates under `$CARGO_HOME/bin` only when the active `cargo` executable
 also comes from that directory. Otherwise it falls back to
 `$HOME/.install-action/bin`.
 
-`cache-all-crates` is unrelated to this executable: it controls registry crate
-cleanup, not `$CARGO_HOME/bin`.
+`cache-all-crates` is unrelated to these executables: it controls registry
+crate cleanup, not `$CARGO_HOME/bin`.
 
 `cache-bin: true` also does not make these taiki-installed executables reusable
 through `rust-cache`. If an executable is placed in `$CARGO_HOME/bin`,

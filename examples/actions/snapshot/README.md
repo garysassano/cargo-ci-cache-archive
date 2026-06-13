@@ -33,7 +33,9 @@ This fork adds snapshot stream keys, path-scoped identity, fallback restore keys
     printf 'save=true\n' > /mnt/build-state/.runs-on-snapshot/save-marker
 ```
 
-For a complete Cargo Lambda matrix workflow using RunsOn S3 cache, inline snapshot checkout, and per-function snapshot keys, see [`../../workflows/cargo-lambda-snapshot-matrix.yml`](../../workflows/cargo-lambda-snapshot-matrix.yml).
+For a complete Cargo Lambda matrix workflow using RunsOn EBS snapshots, inline
+snapshot checkout, and per-function snapshot keys, see
+[`../../workflows/cargo-lambda-snapshot-matrix.yml`](../../workflows/cargo-lambda-snapshot-matrix.yml).
 
 ## Inputs
 

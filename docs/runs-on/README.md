@@ -93,37 +93,45 @@ sequenceDiagram
     Magic->>S3: Write worktree archive
 ```
 
-## Recommended `rust-cache` Inputs
+## `rust-cache` Inputs
+
+RunsOn does not require different `rust-cache` inputs.
+[Magic Cache](https://runs-on.com/caching/magic-cache/) transparently replaces
+the `actions/cache` storage backend, while `rust-cache` retains the same path
+selection, keying, cleanup, and save behavior used with GitHub's hosted cache
+service.
+
+Use the same approach-defining inputs as the generic mtime-preserving checkout:
 
 ```yaml
 - uses: Swatinem/rust-cache@v2
   with:
     workspaces: ./app -> ../../target-for-job
-    cache-all-crates: false
-    cache-bin: false
     cache-targets: true
     cache-workspace-crates: true
     shared-key: app-target-v1
 ```
 
-- `cache-all-crates: false`: taiki normally downloads prebuilt releases for
-  supported tools such as `cargo-lambda` and `trunk`.
-- `cache-bin: false`: this workflow has no Cargo-registered installed tools
-  for `rust-cache` to preserve.
 - `cache-targets: true`: include the configured target directory.
 - `cache-workspace-crates: true`: retain matching workspace library artifacts
   through target cleanup.
 
-If another workflow step installs tools with `cargo install`, reconsider
-`cache-all-crates` and `cache-bin` using the canonical behavior page rather
-than copying these selected values blindly.
+Choose `cache-all-crates` and `cache-bin` from the complete workflow, not from
+the cache backend:
+
+- Keep the `cache-all-crates: false` default unless another step needs registry
+  crates outside the workspace dependency graph.
+- Keep the `cache-bin: true` default when another step installs
+  Cargo-registered binaries. Set it to `false` when the workflow has none.
+- A normal `taiki-e/install-action` prebuilt installation does not require
+  either `cache-all-crates: true` or `cache-bin: true`.
 
 See [`rust-cache` behavior](../concepts/rust-cache-behavior.md) for exact input
 semantics and cleanup rules.
 
 ## Workflow Shape
 
-Enable the RunsOn S3 cache extra and initialize RunsOn before using
+Enable RunsOn Magic Cache and initialize RunsOn before using
 `actions/cache` or `Swatinem/rust-cache`:
 
 ```yaml
@@ -138,8 +146,8 @@ jobs:
 
 Then follow the generic
 [mtime-preserving checkout workflow](../../examples/workflows/rust-cache-mtime-checkout.yml).
-Keep the example's stable worktree and target paths, and apply the
-RunsOn-specific `rust-cache` inputs above.
+Keep the example's stable worktree, target paths, and `rust-cache` inputs.
+RunsOn adds no backend-specific `rust-cache` input.
 
 ## Prebuilt Development Tools
 

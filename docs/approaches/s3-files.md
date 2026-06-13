@@ -13,6 +13,37 @@ S3 Files was tested as a shared filesystem for Cargo target and registry state. 
 
 The goal was to test whether an S3-backed shared filesystem could preserve or share enough Cargo state to make repeated Cargo builds fast across ephemeral workers.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    runner[Ephemeral CI runner]
+    mount[S3 Files mount helper]
+    filesystem[(S3 Files shared filesystem)]
+    active[High-performance active-data layer]
+    bucket[(S3 bucket)]
+
+    cargo[Cargo build]
+    registry[Cargo registry state]
+    target[Target metadata and artifacts]
+    metadata[Many small metadata, fingerprint, dep-info, and build-script reads]
+
+    runner --> mount --> filesystem
+    filesystem <--> active
+    active <--> bucket
+
+    registry --> filesystem
+    target --> filesystem
+    cargo --> registry
+    cargo --> target
+    cargo --> metadata --> filesystem
+```
+
+S3 Files can preserve a shared namespace and make Cargo logically fresh, but
+Cargo still traverses many small files through the network filesystem. In the
+recorded experiments, that metadata/read path dominated the no-op build even
+when compilation itself was unnecessary.
+
 ## Current AWS Mechanics
 
 Current AWS documentation describes S3 Files as a service that makes S3 buckets accessible as high-performance file systems powered by EFS. On EC2, the S3 Files client installs a mount helper that defines the Linux filesystem type `s3files`, compatible with the standard `mount` command.

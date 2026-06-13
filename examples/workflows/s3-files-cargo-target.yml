@@ -26,6 +26,9 @@ jobs:
       CARGO_HOME: /mnt/s3-files/cargo-home
 
     steps:
+      - name: Setup RunsOn Magic Cache
+        uses: runs-on/action@v2
+
       - name: Checkout
         uses: actions/checkout@v6
 

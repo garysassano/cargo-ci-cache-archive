@@ -24,6 +24,51 @@ target cache key includes source state
 Cargo builds with explicit CARGO_TARGET_DIR
 ```
 
+## Architecture
+
+```mermaid
+flowchart TD
+    worktree[(Cached source worktree)]
+    checkout[Checkout new commit in place]
+    stable_sources[Unchanged sources retain mtimes]
+
+    rust_cache[(Swatinem/rust-cache archive)]
+    restore_home[Restore Cargo home only]
+    cargo_home[CARGO_HOME registry and Git state]
+
+    source_key[Compute key from tracked source state]
+    target_cache[(Source-keyed full target archive)]
+    restore_target[Restore full target directory]
+    target[Artifacts, dep-info, fingerprints, and build outputs]
+
+    cargo[Cargo freshness decision]
+    build[Compile dirty units]
+    fresh[Reuse fresh units]
+    save_target[Save target archive on key miss]
+    clean_home[Clean and save rust-cache Cargo home]
+
+    worktree --> checkout --> stable_sources
+    rust_cache --> restore_home --> cargo_home
+    checkout --> source_key --> target_cache --> restore_target --> target
+
+    stable_sources --> cargo
+    cargo_home --> cargo
+    target --> cargo
+    cargo -->|state is fresh| fresh
+    cargo -->|state is missing or changed| build
+
+    fresh --> save_target
+    build --> save_target
+    save_target --> target_cache
+    save_target --> clean_home
+    clean_home --> rust_cache
+```
+
+The full target archive restores after `rust-cache`, so `rust-cache` cannot
+prune workspace artifacts from it before the build. Its key includes source
+state, allowing a changed source tree to seed a new target archive instead of
+reusing an immutable stale exact hit indefinitely.
+
 ## Critical Ordering
 
 The target cache must restore after `rust-cache`.
@@ -86,5 +131,7 @@ The workaround adds custom cache composition and ordering constraints. It is cor
 Use it if:
 
 - Generated-code/build-script rebuilds are too expensive.
-- Upstream `rust-cache` adds native source-keyed target caching.
 - A fork/adapter is warranted because upstream does not support the use case.
+
+Retire or simplify this workaround if upstream `rust-cache` adds equivalent
+source-keyed target caching.

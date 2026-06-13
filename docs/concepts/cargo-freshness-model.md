@@ -76,7 +76,14 @@ The rows marked 🎯 and 🧭 are the most important for deciding whether Cargo 
 
 Binaries installed with `cargo install` usually live in `$CARGO_HOME/bin`. Some of those binaries are named `cargo-*` and can be invoked as `cargo <name>`, but the cacheable location is still Cargo home. Rustup components are separate toolchain state. For example, `cargo fmt` is backed by the `rustfmt` Rustup component, so preserving it is toolchain/Rustup state rather than Cargo dependency state.
 
-Some Cargo subcommands and Cargo-backed build frontends also write helper state outside `$CARGO_HOME` and `target/`. For example, `cargo-lambda` can use `cargo-zigbuild`, which writes linker wrapper/cache state under the platform cache directory, normally `$HOME/.cache/cargo-zigbuild` on Linux. If that state should be preserved by a snapshot, set `XDG_CACHE_HOME` to a directory under the snapshot root for the Cargo build step, such as `/mnt/build-snapshot/xdg-cache`. This is still Cargo-helper state, not the Zig compiler tarball or rustup toolchain cache.
+Some Cargo subcommands and Cargo-backed build frontends also write helper state
+outside `$CARGO_HOME` and `target/`. For example, `cargo-lambda` can use
+`cargo-zigbuild`, which writes linker wrapper/cache state under the platform
+cache directory, normally `$HOME/.cache/cargo-zigbuild` on Linux. Cache that
+directory explicitly when preserving it is worthwhile. For the archived
+snapshot approach, it can instead be placed under the snapshot root by setting
+`XDG_CACHE_HOME` for the Cargo build step. This is still Cargo-helper state, not
+the Zig compiler tarball or rustup toolchain cache.
 
 ## Where Cargo Stores Inter-Build State
 
@@ -136,7 +143,13 @@ $XDG_CACHE_HOME/cargo-zigbuild/
 $HOME/.cache/cargo-zigbuild/     # default when XDG_CACHE_HOME is unset on Linux
 ```
 
-These directories are not part of Cargo home or the target directory, but they can be written by Cargo subcommands or build frontends that participate in the build. If a workflow's goal is to snapshot Cargo-specific build state surgically, point `XDG_CACHE_HOME` at a directory under the snapshot root only for the relevant Cargo build step. Keep unrelated setup-action caches, tool archives, and compiler downloads on their normal cache backend unless they are deliberately part of the snapshot.
+These directories are not part of Cargo home or the target directory, but they
+can be written by Cargo subcommands or build frontends that participate in the
+build. Cache them explicitly in the selected archive-cache design if their
+setup cost is material. In the archived snapshot design, point
+`XDG_CACHE_HOME` at a directory under the snapshot root only for the relevant
+Cargo build step. Keep unrelated setup-action caches, tool archives, and
+compiler downloads on their normal cache backend.
 
 ## Example Local Target Shape
 

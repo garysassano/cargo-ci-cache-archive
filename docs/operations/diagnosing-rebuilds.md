@@ -66,7 +66,8 @@ Cargo needs more than final binaries. It also needs dep-info, fingerprints, buil
 
 Fixes:
 
-- Preserve the full target directory if maximum no-op behavior is needed.
+- Use the source-keyed full-target cache when dependency-oriented target
+  cleanup repeatedly removes required workspace state.
 - Avoid cache cleanup that removes workspace target artifacts.
 
 ### Build Script Reruns
@@ -87,7 +88,8 @@ If extracted registry sources are missing, Cargo may recreate them from crate ar
 Fixes:
 
 - Accept it for dependency-oriented caching.
-- Use filesystem snapshot if exact local no-op fidelity is required.
+- Use the source-keyed target-cache workaround when the missing state causes
+  material repeated rebuilds.
 
 ### Cache Key Does Not Include Source State
 

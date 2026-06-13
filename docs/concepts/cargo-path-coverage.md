@@ -48,18 +48,22 @@ removes pre-existing cargo bin entries
 
 An EBS snapshot preserves the mounted filesystem subtree. If the path is under the snapshot root and was not removed before the post step, it is saved.
 
-## Best Home For Each State Type
+## Choosing Coverage
 
-| State | Best home | Why |
+| State | Preferred coverage | Why |
 | --- | --- | --- |
-| `target/` | EBS snapshot for maximum no-op fidelity, or `rust-cache` for simpler dependency-oriented caching | Cargo freshness depends on artifacts, dep-info, fingerprints, build script outputs, and stable filesystem metadata. |
-| `$CARGO_HOME/registry`, `$CARGO_HOME/git` | `rust-cache` for practical dependency caching, EBS snapshot for full filesystem continuity | Extracted sources and mtimes can matter for perfect no-op behavior. |
-| `$XDG_CACHE_HOME/cargo-zigbuild` | EBS snapshot or explicit cache if the helper cache matters | This is Cargo-helper state created by a Cargo build frontend. |
-| Cargo-installed helper binaries | Custom AMI preferred, `rust-cache` acceptable | These are setup state, not freshness proof. |
+| `target/` | `rust-cache` for the selected default; add the source-keyed full-target cache only when measured rebuilds justify it | Cargo freshness depends on artifacts, dep-info, fingerprints, build script outputs, and stable filesystem metadata. |
+| `$CARGO_HOME/registry`, `$CARGO_HOME/git` | `rust-cache` | These are dependency download and source inputs that `rust-cache` is designed to manage. |
+| `$XDG_CACHE_HOME/cargo-zigbuild` | Explicit `actions/cache` entry if preserving the helper cache is worthwhile | This is Cargo-helper state outside Cargo home and `target/`. |
+| Cargo-installed helper binaries | Custom AMI or setup action preferred; `rust-cache` is useful for Cargo-registered installs | These are setup state, not freshness proof. |
 | Rust toolchain and rustup targets | Custom AMI preferred, otherwise a setup action's cache | Toolchain state is large and stable. |
 | Zig compiler install | Custom AMI preferred, otherwise a setup action's cache | Stable tool state. |
 | Zig tarball/download cache | `actions/cache` | Immutable download archives fit keyed archive cache semantics. |
 | Node/package/deployment dependencies | Ecosystem cache or custom AMI | Outside Cargo freshness. |
+
+The archived EBS snapshot approach covers these paths with greater filesystem
+continuity, but it is not the selected deployment because of its operational
+and lifecycle complexity.
 
 ## Important Warning
 

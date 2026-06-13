@@ -74,7 +74,7 @@ Limitations:
 
 Examples:
 
-- S3 Files.
+- [Amazon S3 Files](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-files.html).
 - Other remote filesystems exposed as local mount paths.
 
 Network filesystem behavior:
