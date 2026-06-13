@@ -78,6 +78,22 @@ Binaries installed with `cargo install` usually live in `$CARGO_HOME/bin`. Some 
 
 Some Cargo subcommands and Cargo-backed build frontends also write helper state outside `$CARGO_HOME` and `target/`. For example, `cargo-lambda` can use `cargo-zigbuild`, which writes linker wrapper/cache state under the platform cache directory, normally `$HOME/.cache/cargo-zigbuild` on Linux. If that state should be preserved by a snapshot, set `XDG_CACHE_HOME` to a directory under the snapshot root for the Cargo build step, such as `/mnt/build-snapshot/xdg-cache`. This is still Cargo-helper state, not the Zig compiler tarball or rustup toolchain cache.
 
+Likewise, frontend build tools can manage their own helper downloads outside the
+Cargo target directory. For example, Trunk can download `tailwindcss`,
+`wasm-bindgen`, and `wasm-opt` into a Trunk-specific cache directory, commonly
+under `$XDG_CACHE_HOME/dev.trunkrs.trunk` on Linux. Restoring Cargo target state
+does not make those helper downloads no-op; cache the helper directory separately
+or preinstall the tools if their setup time matters.
+
+`Swatinem/rust-cache` can include `$CARGO_HOME/bin` when `cache-bin=true`, but
+that is not a complete setup-tool cache strategy. In the tested workflow,
+`taiki-e/install-action` still installed `cargo-lambda` and `trunk` on every job,
+so `cache-bin=true` did not remove that setup cost. The action also records which
+cargo bin entries existed at restore time and removes those pre-existing entries
+before saving, so binaries restored from an earlier cache can be cleaned before
+the next save. Prefer preinstalled runner tools or setup-action caches for stable
+commands such as `cargo-lambda` and `trunk`.
+
 ## Where Cargo Stores Inter-Build State
 
 These paths are the main "breadcrumbs" Cargo leaves behind for later builds.

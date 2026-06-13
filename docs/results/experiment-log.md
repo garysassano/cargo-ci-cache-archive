@@ -187,6 +187,18 @@ Cargo flag lesson:
   because offline mode needs complete local registry/index state while
   `rust-cache` intentionally prunes Cargo home.
 
+Tool-cache lesson:
+
+- `cache-bin=true` did not remove the need for setup actions to install helper
+  commands such as `cargo-lambda` and `trunk` on every job in the tested workflow.
+- Treat Cargo-installed helper binaries and frontend-managed tools as setup state,
+  not Cargo freshness proof.
+- Preinstall stable helper tools in the runner image, use the setup action's own
+  cache when available, or cache the tool's own cache directory explicitly.
+- For Trunk, the remaining repeated-run time came mostly from its own pipeline:
+  pre-build hook, helper tool downloads/installs, wasm processing, and dist
+  application, rather than from missing Cargo target artifacts.
+
 Decision:
 
 - Keep the external source-keyed target-cache workaround as the documented copyable

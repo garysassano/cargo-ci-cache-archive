@@ -19,6 +19,7 @@ This page lists the Cargo paths that matter between builds and how the major CI 
 | `$CARGO_HOME/git/checkouts` | Git dependency source trees | Covered and cleaned for used refs | Covered if `CARGO_HOME` is under snapshot root |
 | `$CARGO_HOME/bin` | Cargo-installed binaries | Covered if `cache-bin=true` | Covered if `CARGO_HOME` is under snapshot root |
 | `$XDG_CACHE_HOME/cargo-zigbuild` | Cargo helper cache/state | Not covered unless separately cached | Covered if `XDG_CACHE_HOME` is under snapshot root |
+| Trunk tool cache, for example `$XDG_CACHE_HOME/dev.trunkrs.trunk` | Trunk-managed helper binaries such as `wasm-bindgen`, `wasm-opt`, and `tailwindcss` | Not covered unless separately cached | Covered if under snapshot root |
 | `target/<profile>/deps/*.rlib` | Compiled library artifacts | Dependency-oriented; workspace artifacts require `cache-workspace-crates` and still follow `rust-cache` key behavior | Covered |
 | `target/<profile>/deps/*.rmeta` | Rust metadata for downstream crates | Dependency-oriented | Covered |
 | `target/<profile>/deps/*.d` | Dep-info freshness/input tracking | Dependency-oriented | Covered |
@@ -43,6 +44,16 @@ cleans unused dependencies
 removes pre-existing cargo bin entries
 ```
 
+`cache-bin=true` should not be treated as a general setup-tool cache. In the
+tested workflow it was effectively not useful for `cargo-lambda` or `trunk`,
+because those commands were installed by `taiki-e/install-action` after
+`rust-cache` restored and the install step still ran on every job. Binaries that
+are restored into `$CARGO_HOME/bin` also exist before the `rust-cache` post step
+computes what changed during the job, so they can be considered pre-existing and
+removed before the next save. For stable CI helper tools, prefer a custom runner
+image, the setup action's own cache, or an explicit tool cache. Use `rust-cache`
+for `$CARGO_HOME/bin` only when that tradeoff is acceptable.
+
 An EBS snapshot preserves the mounted filesystem subtree. If the path is under the snapshot root and was not removed before the post step, it is saved.
 
 ## Best Home For Each State Type
@@ -52,7 +63,8 @@ An EBS snapshot preserves the mounted filesystem subtree. If the path is under t
 | `target/` | EBS snapshot for maximum no-op fidelity, or `rust-cache` for simpler dependency-oriented caching | Cargo freshness depends on artifacts, dep-info, fingerprints, build script outputs, and stable filesystem metadata. |
 | `$CARGO_HOME/registry`, `$CARGO_HOME/git` | `rust-cache` for practical dependency caching, EBS snapshot for full filesystem continuity | Extracted sources and mtimes can matter for perfect no-op behavior. |
 | `$XDG_CACHE_HOME/cargo-zigbuild` | EBS snapshot or explicit cache if the helper cache matters | This is Cargo-helper state created by a Cargo build frontend. |
-| Cargo-installed helper binaries | Custom AMI preferred, `rust-cache` acceptable | These are setup state, not freshness proof. |
+| Trunk tool cache | Custom AMI, explicit cache, or snapshot | Trunk downloads helper tools outside Cargo target state. Cache these paths separately if their install time matters. |
+| Cargo-installed helper binaries | Custom AMI or setup-action cache preferred | These are setup state, not freshness proof; `rust-cache cache-bin` may not persist them reliably across runs. |
 | Rust toolchain and rustup targets | Custom AMI preferred, otherwise setup action/Magic Cache | Toolchain state is large and stable. |
 | Zig compiler install | Custom AMI preferred, otherwise setup action/Magic Cache | Stable tool state. |
 | Zig tarball/download cache | `actions/cache` or RunsOn Magic Cache | Immutable download archives fit keyed archive cache semantics. |
