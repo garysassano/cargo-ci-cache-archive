@@ -1,0 +1,145 @@
+# Experiment Log
+
+This log preserves the major observations from the cache experiments. It is intentionally practical and result-oriented.
+
+## Baseline Problem
+
+Normal GitHub Actions checkouts rewrite source mtimes. Cargo uses source mtimes, target artifacts, dep-info, fingerprints, build-script outputs, and toolchain/config fingerprints to decide whether units are fresh.
+
+The initial symptom was that Cargo rebuilt local workspace crates even when target artifacts were restored. The main reason was that source files appeared newer than restored target fingerprints after checkout.
+
+## S3 Files Experiments
+
+S3 Files was tested for Cargo target and registry state.
+
+Important observations:
+
+- Cargo could report logically clean state: `Compiling 0`, `Downloaded 0`, `Dirty 0`, `fingerprint error 0`.
+- Actual no-op elapsed time remained high because Cargo still traversed target metadata and fingerprints.
+- Pure S3 Files registry plus target produced forced no-op Cargo times around 35 to 39 seconds.
+- Prewarm reduced the later Cargo step but moved cost into the prewarm step.
+- Copying registry state from S3 Files to local disk was not viable; one copy test took about 932 seconds.
+- `rust-cache` for registry plus S3 Files for target improved some runs to around 8 to 14 seconds of Cargo time, but local target cache remained better overall.
+- S3 Files mount/setup costs included helper package/install overhead in the runner image used during testing.
+
+Conclusion: S3 Files is not the right primitive for Cargo target no-op state in this workflow.
+
+## EBS Snapshot Analysis
+
+The analysis compared `Swatinem/rust-cache` with `runs-on/snapshot` for generic workspace builds.
+
+Key empirical comparison:
+
+| Method | Reuse `Compiling` lines | Reuse `Fresh` lines | Fingerprint / dirty indicators |
+| --- | ---: | ---: | ---: |
+| `Swatinem/rust-cache` + Magic Cache | 30 | 593 | 72 |
+| `runs-on/snapshot` | 0 | 623 | 0 |
+
+Interpretation:
+
+- `runs-on/snapshot` most closely restores the filesystem Cargo saw last time.
+- `rust-cache` restores a cleaned archive subset that is excellent for dependencies but not equivalent to a complete workspace build-state snapshot.
+
+Conclusion: EBS snapshots are the strongest model for local no-op fidelity, but heavier operationally.
+
+## Cached Worktree Checkout
+
+A custom cached worktree checkout action was introduced to preserve source mtimes.
+
+Behavior:
+
+- Restore cached worktree from `actions/cache`.
+- If `.git/HEAD` already equals `GITHUB_SHA`, skip fetch/checkout entirely.
+- If the worktree is older, fetch and checkout in place.
+- Git rewrites changed files and leaves unchanged files with previous mtimes.
+
+Result:
+
+- This fixed the main false rebuild source.
+- Repeated same-SHA runs allowed many jobs to become Cargo no-ops.
+
+## First No-S3 Implementation
+
+Workflow shape:
+
+```text
+cached worktree checkout
+per-job CARGO_TARGET_DIR
+Swatinem/rust-cache cache-targets: true
+cache-all-crates: true
+cache-workspace-crates: true
+```
+
+Result:
+
+- Most matrix jobs completed around 33 to 37 seconds.
+- A representative no-op Cargo step finished around 0.31 seconds.
+- A few outliers remained around 50 to 65 seconds.
+
+Outliers involved generated-code/build-script crates and downstream binaries.
+
+## Build Script Input Hints
+
+Explicit `cargo:rerun-if-changed` hints were added to local generated-code build scripts:
+
+```rust
+println!("cargo:rerun-if-changed=build.rs");
+println!("cargo:rerun-if-changed=path/to/generated-input");
+```
+
+This is good build-script hygiene, but it did not fix the repeated CI rebuild alone.
+
+## `rust-cache` Exact-Hit Behavior
+
+The repeated outliers persisted because `rust-cache` could restore an exact key that did not include workspace source contents. Since the key was exact, the post step reported `Cache up-to-date` and did not save the newly rebuilt workspace target artifacts.
+
+Cycle observed:
+
+```text
+restore stale exact target cache
+Cargo rebuilds some workspace crates
+rust-cache post step says Cache up-to-date
+rebuilt target state is not saved
+next run restores same stale exact target cache
+same crates rebuild again
+```
+
+## Source-Keyed Target Cache Workaround
+
+The proven workaround split cache responsibility:
+
+```text
+rust-cache manages Cargo home only
+actions/cache manages full per-job target directory
+target cache key includes source state
+target cache restore happens after rust-cache
+```
+
+Incorrect ordering tested:
+
+```text
+restore target cache
+then rust-cache
+```
+
+This still rebuilt because `rust-cache` cleanup could remove target artifacts.
+
+Correct ordering:
+
+```text
+rust-cache restore
+then restore target cache
+then build
+```
+
+Result:
+
+- All previously slow jobs became true Cargo no-ops.
+- Cargo build phases were around 0.24 to 0.31 seconds.
+- All tested matrix jobs finished around 34 to 37 seconds in the final verification run.
+
+Decision:
+
+- Keep this workaround documented.
+- Do not select it as the default yet because it adds cache composition complexity.
+- Ask upstream `Swatinem/rust-cache` for source-keyed target-cache support.

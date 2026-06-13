@@ -1,0 +1,39 @@
+name: S3 Files Cargo Target Experiment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      S3_FILES_MOUNT: /mnt/s3-files
+      CARGO_TARGET_DIR: /mnt/s3-files/cargo-target
+      CARGO_HOME: /mnt/s3-files/cargo-home
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Mount S3 Files
+        run: |
+          echo "Replace this step with S3 Files mount helper setup and mount command."
+          mkdir -p "$S3_FILES_MOUNT" "$CARGO_TARGET_DIR" "$CARGO_HOME"
+
+      - name: Optional prewarm
+        run: |
+          find "$CARGO_TARGET_DIR" -maxdepth 4 -type f >/dev/null || true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --workspace --release --locked
+
+      - name: Unmount S3 Files
+        if: always()
+        run: echo "Replace this step with unmount cleanup."

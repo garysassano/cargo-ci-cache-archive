@@ -1,0 +1,55 @@
+name: Cargo Build With EBS Snapshot Layout
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      SNAPSHOT_ROOT: /mnt/build-snapshot
+      SNAPSHOT_WORKSPACE: /mnt/build-snapshot/workspace
+      CARGO_HOME: /mnt/build-snapshot/cargo-home
+      CARGO_TARGET_DIR: /mnt/build-snapshot/workspace/app/target
+      XDG_CACHE_HOME: /mnt/build-snapshot/xdg-cache
+
+    defaults:
+      run:
+        working-directory: /mnt/build-snapshot/workspace/app
+
+    steps:
+      - name: Checkout workflow actions
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            examples/actions/cached-worktree-checkout
+
+      - name: Restore EBS snapshot
+        run: |
+          echo "Replace this step with the runner/provider action that restores and mounts an EBS snapshot at $SNAPSHOT_ROOT."
+          mkdir -p "$SNAPSHOT_WORKSPACE" "$CARGO_HOME" "$CARGO_TARGET_DIR" "$XDG_CACHE_HOME"
+
+      - name: Checkout cached worktree inside snapshot root
+        uses: ./examples/actions/cached-worktree-checkout
+        with:
+          path: ${{ env.SNAPSHOT_WORKSPACE }}
+          sparse-paths: app
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --workspace --release --locked
+
+      - name: Scrub credentials before snapshot save
+        if: always()
+        run: |
+          rm -f "$CARGO_HOME/credentials.toml" "$CARGO_HOME/credentials"
+
+      - name: Save EBS snapshot
+        if: always()
+        run: echo "Replace this step with the runner/provider action that unmounts, detaches, and snapshots $SNAPSHOT_ROOT."

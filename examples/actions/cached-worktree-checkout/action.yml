@@ -1,0 +1,77 @@
+name: Cached Worktree Checkout
+description: Checkout the requested SHA into a restored Git worktree, preserving mtimes for unchanged files.
+
+inputs:
+  path:
+    description: Absolute destination path for the restored Git worktree.
+    required: true
+  sparse-paths:
+    description: Newline-delimited sparse checkout paths. Empty means full checkout.
+    required: false
+    default: ''
+  skip-if-head-matches:
+    description: Skip checkout when HEAD already equals GITHUB_SHA to preserve source mtimes.
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout cached worktree
+      shell: bash
+      env:
+        CHECKOUT_PATH: ${{ inputs.path }}
+        SPARSE_PATHS: ${{ inputs.sparse-paths }}
+        SKIP_IF_HEAD_MATCHES: ${{ inputs.skip-if-head-matches }}
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "$CHECKOUT_PATH" ] || [ "${CHECKOUT_PATH#/}" = "$CHECKOUT_PATH" ]; then
+          echo "::error::path must be an absolute path"
+          exit 1
+        fi
+
+        mkdir -p "$CHECKOUT_PATH"
+        git config --global --add safe.directory "$CHECKOUT_PATH"
+        cd "$CHECKOUT_PATH"
+
+        if [ "$SKIP_IF_HEAD_MATCHES" = "true" ] && [ -d .git ]; then
+          current_head="$(git rev-parse --verify HEAD 2>/dev/null || true)"
+          if [ "$current_head" = "$GITHUB_SHA" ]; then
+            echo "HEAD already matches $GITHUB_SHA; skipping fetch/checkout to preserve file mtimes."
+            exit 0
+          fi
+        fi
+
+        if [ ! -d .git ]; then
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+        else
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+        fi
+
+        if [ -n "$SPARSE_PATHS" ]; then
+          git sparse-checkout init --cone
+          sparse_args=()
+          while IFS= read -r sparse_path; do
+            if [ -n "$sparse_path" ]; then
+              sparse_args+=("$sparse_path")
+            fi
+          done <<< "$SPARSE_PATHS"
+          if [ "${#sparse_args[@]}" -gt 0 ]; then
+            git sparse-checkout set --cone "${sparse_args[@]}"
+          fi
+        else
+          git sparse-checkout disable || true
+        fi
+
+        auth_header="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 | tr -d '\n')"
+        if [ "${GITHUB_REF#refs/heads/}" != "$GITHUB_REF" ]; then
+          fetch_ref="+${GITHUB_REF}:refs/remotes/origin/${GITHUB_REF_NAME}"
+        else
+          fetch_ref="$GITHUB_REF"
+        fi
+
+        git -c "http.https://github.com/.extraheader=$auth_header" fetch --force --prune --no-tags origin "$fetch_ref"
+        git -c advice.detachedHead=false checkout --detach --force "$GITHUB_SHA"

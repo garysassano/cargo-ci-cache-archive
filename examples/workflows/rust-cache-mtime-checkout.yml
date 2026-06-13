@@ -1,0 +1,63 @@
+name: Rust Cache With Cached Worktree Checkout
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - app/**
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      LOCAL_WORKSPACE: /tmp/example-workspace
+      LOCAL_CARGO_TARGET_DIR: /tmp/example-cargo-target
+
+    defaults:
+      run:
+        working-directory: /tmp/example-workspace/app
+
+    steps:
+      - name: Checkout workflow actions
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            examples/actions/cached-worktree-checkout
+
+      - name: Restore cached worktree
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.LOCAL_WORKSPACE }}
+          key: workspace-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            workspace-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}-
+
+      - name: Checkout cached worktree
+        uses: ./examples/actions/cached-worktree-checkout
+        with:
+          path: ${{ env.LOCAL_WORKSPACE }}
+          sparse-paths: app
+
+      - name: Configure Cargo target
+        run: mkdir -p "$LOCAL_CARGO_TARGET_DIR"
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust deps and target
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ env.LOCAL_WORKSPACE }}/app -> ../../example-cargo-target
+          cache-targets: true
+          cache-all-crates: true
+          cache-workspace-crates: true
+          shared-key: example-target-v1
+
+      - name: Build
+        env:
+          CARGO_TARGET_DIR: ${{ env.LOCAL_CARGO_TARGET_DIR }}
+        run: cargo build --workspace --release --locked

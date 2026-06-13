@@ -1,0 +1,43 @@
+name: Cargo Fingerprint Diagnostics
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+
+    env:
+      CARGO_LOG: cargo::core::compiler::fingerprint=trace
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cargo build with fingerprint tracing
+        run: cargo build --workspace --locked -v 2>&1 | tee cargo-fingerprint.log
+
+      - name: Summarize build log
+        if: always()
+        run: |
+          printf 'Compiling lines: '
+          grep -c '^[[:space:]]*Compiling ' cargo-fingerprint.log || true
+          printf 'Fresh lines: '
+          grep -c '^[[:space:]]*Fresh ' cargo-fingerprint.log || true
+          printf 'Fingerprint mentions: '
+          grep -ci 'fingerprint' cargo-fingerprint.log || true
+          printf 'Dirty mentions: '
+          grep -ci 'dirty' cargo-fingerprint.log || true
+
+      - name: Upload diagnostic log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cargo-fingerprint-log
+          path: cargo-fingerprint.log
