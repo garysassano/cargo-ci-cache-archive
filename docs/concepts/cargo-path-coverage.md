@@ -56,9 +56,9 @@ An EBS snapshot preserves the mounted filesystem subtree. If the path is under t
 | `$CARGO_HOME/registry`, `$CARGO_HOME/git` | `rust-cache` for practical dependency caching, EBS snapshot for full filesystem continuity | Extracted sources and mtimes can matter for perfect no-op behavior. |
 | `$XDG_CACHE_HOME/cargo-zigbuild` | EBS snapshot or explicit cache if the helper cache matters | This is Cargo-helper state created by a Cargo build frontend. |
 | Cargo-installed helper binaries | Custom AMI preferred, `rust-cache` acceptable | These are setup state, not freshness proof. |
-| Rust toolchain and rustup targets | Custom AMI preferred, otherwise setup action/Magic Cache | Toolchain state is large and stable. |
-| Zig compiler install | Custom AMI preferred, otherwise setup action/Magic Cache | Stable tool state. |
-| Zig tarball/download cache | `actions/cache` or RunsOn Magic Cache | Immutable download archives fit keyed archive cache semantics. |
+| Rust toolchain and rustup targets | Custom AMI preferred, otherwise a setup action's cache | Toolchain state is large and stable. |
+| Zig compiler install | Custom AMI preferred, otherwise a setup action's cache | Stable tool state. |
+| Zig tarball/download cache | `actions/cache` | Immutable download archives fit keyed archive cache semantics. |
 | Node/package/deployment dependencies | Ecosystem cache or custom AMI | Outside Cargo freshness. |
 
 ## Important Warning

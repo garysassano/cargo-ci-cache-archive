@@ -16,13 +16,20 @@ It covers:
 
 Use `Swatinem/rust-cache` in the normal way, combined with a checkout/worktree strategy that preserves unchanged source file mtimes.
 
-This is the pragmatic default because it relies on maintained upstream behavior, avoids custom target-cache choreography in every workflow, and still gets most matrix jobs into the fast repeated-run path. If true full Cargo no-op behavior becomes necessary, the source-keyed target-cache workaround is documented and proven.
+This is the pragmatic default because it relies on maintained upstream
+behavior, avoids custom target-cache choreography in every workflow, and still
+gets most matrix jobs into the fast repeated-run path. The selected RunsOn
+deployment is documented separately in the
+[RunsOn guide](docs/runs-on/README.md). If true full Cargo no-op
+behavior becomes necessary, the source-keyed target-cache workaround is
+documented and proven.
 
 ## Start Here
 
 | Goal | Entry point |
 | --- | --- |
 | Choose or compare cache approaches | [Approach Comparison](docs/approaches/README.md) |
+| Deploy the recommended approach on RunsOn | [RunsOn Magic Cache](docs/runs-on/README.md) |
 | Understand why Cargo rebuilds | [Cargo Freshness Model](docs/concepts/cargo-freshness-model.md) |
 | Check which paths each approach preserves | [Cargo Path Coverage](docs/concepts/cargo-path-coverage.md) |
 | Review measurements and experiment history | [Empirical Results](docs/results/empirical-results.md), [Experiment Log](docs/results/experiment-log.md) |

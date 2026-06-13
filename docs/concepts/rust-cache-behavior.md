@@ -99,18 +99,15 @@ names. It does not preserve the entire target tree or profile-root binaries.
 For the recommended mtime-preserving checkout approach:
 
 ```yaml
-cache-all-crates: false
-cache-bin: false
 cache-targets: true
 cache-workspace-crates: true
 ```
 
-- Keep `cache-all-crates: false` unless the workflow downloads registry crates
+- Keep `cache-all-crates` at `false` unless the workflow downloads registry crates
   outside the workspace dependency graph, such as a tool compiled through
   `cargo install` or an install action's source-build fallback.
-- Use `cache-bin: false` when the workflow has no Cargo-registered installed
-  tools to preserve. Taiki's prebuilt `cargo-lambda` installation does not
-  benefit from this cache path.
+- Set `cache-bin` according to whether the workflow has Cargo-registered
+  installed tools to preserve.
 - Keep `cache-targets: true` because the approach needs target metadata and
   artifacts in addition to stable source mtimes. It is already the default,
   but writing it explicitly makes the architecture clear.
@@ -123,18 +120,19 @@ include all workspace source contents. This can repeatedly restore stale
 workspace artifacts; use the source-keyed target-cache workaround when that is
 measurable.
 
-## Tool Example: `cargo-lambda`
+## Tool Example: taiki-e Prebuilt Tools
 
-`taiki-e/install-action` officially supports `cargo-lambda` by downloading a
-prebuilt archive from the tool's GitHub Releases. It installs Cargo tools under
-`$CARGO_HOME/bin` only when the active `cargo` executable also comes from that
-directory. Otherwise it falls back to `$HOME/.install-action/bin`.
+`taiki-e/install-action` officially supports tools including `cargo-lambda`
+and `trunk` through prebuilt GitHub Release archives. It installs tools backed
+by Rust crates under `$CARGO_HOME/bin` only when the active `cargo` executable
+also comes from that directory. Otherwise it falls back to
+`$HOME/.install-action/bin`.
 
 `cache-all-crates` is unrelated to this executable: it controls registry crate
 cleanup, not `$CARGO_HOME/bin`.
 
-`cache-bin: true` also does not make this taiki-installed executable reusable
-through `rust-cache`. If the executable is placed in `$CARGO_HOME/bin`,
+`cache-bin: true` also does not make these taiki-installed executables reusable
+through `rust-cache`. If an executable is placed in `$CARGO_HOME/bin`,
 `rust-cache` removes it during save because taiki's release extraction does
 not register it in Cargo's `.crates2.json` installation metadata. If taiki
 uses its fallback directory, that path is outside the `rust-cache` Cargo-home
@@ -143,7 +141,7 @@ paths entirely.
 Use explicit `cache-bin: true` when the workflow installs tools through
 `cargo install` or another path that updates Cargo's installation metadata.
 It is not useful for caching the normal taiki-e release installation of
-`cargo-lambda`.
+these tools.
 
 `cache-all-crates: true` becomes relevant only if installation falls back to
 compiling the tool from registry sources and the workflow wants to retain all
@@ -152,13 +150,14 @@ of those downloaded crate archives and sources.
 The install action also does not currently skip a supported tool when a
 matching executable is already present. Its upstream idempotent-install issue
 remains open, and the maintainer states that the existing check applies only
-to `cargo-binstall` itself. For supported `cargo-lambda` versions, the action
-proceeds through its release download and extraction path.
+to `cargo-binstall` itself. Supported `cargo-lambda` and `trunk` versions
+proceed through the release download and extraction path.
 
 Official implementation references:
 
-- [`cargo-lambda` support](https://github.com/taiki-e/install-action/blob/main/TOOLS.md)
+- [Supported tools](https://github.com/taiki-e/install-action/blob/main/TOOLS.md)
 - [`cargo-lambda` release manifest](https://github.com/taiki-e/install-action/blob/main/manifests/cargo-lambda.json)
+- [`trunk` release manifest](https://github.com/taiki-e/install-action/blob/main/manifests/trunk.json)
 - [Supported-tool download path](https://github.com/taiki-e/install-action/blob/7a79fe8c3a13344501c80d99cae481c1c9085912/main.sh#L946-L992)
 - [Cargo binary directory selection](https://github.com/taiki-e/install-action/blob/7a79fe8c3a13344501c80d99cae481c1c9085912/main.sh#L616-L639)
 - [Open idempotent-install request](https://github.com/taiki-e/install-action/issues/577)

@@ -77,39 +77,9 @@ a dependency-oriented target subset. Both are needed for this approach:
 stable source mtimes do not replace target fingerprints, and restored target
 state does not help if checkout rewrites every source mtime.
 
-When RunsOn Magic Cache backs `actions/cache`, it changes where the worktree
-and `Swatinem/rust-cache` archives are stored and transferred. It does not
-change the archive keys, extraction behavior, cleanup, or exact-hit save
-semantics shown above.
-
-## Recommended RunsOn Shape
-
-For the Cargo Lambda workflow discussed in this archive, use:
-
-```text
-RunsOn runner with Magic Cache / S3 backend
-actions/cache restores the mtime-preserving source worktree
-Swatinem/rust-cache restores Cargo home and target state
-taiki-e/install-action installs the pinned cargo-lambda release
-cargo lambda build runs with a stable explicit target directory
-```
-
-This keeps the established archive-cache approach and avoids EBS snapshot
-lifecycle complexity. RunsOn supplies the fast S3-backed cache transport;
-`Swatinem/rust-cache` still owns Cargo-aware path selection and save cleanup.
-
-For this shape:
-
-- Use `cache-all-crates: false`; taiki normally downloads a prebuilt
-  `cargo-lambda` release rather than compiling registry crates.
-- Use `cache-bin: false`; this workflow has no Cargo-registered installed
-  tools to preserve, and taiki's directly extracted binary is not reusable
-  through this input.
-- Use `cache-targets: true`.
-- Use `cache-workspace-crates: true` so matching workspace library artifacts
-  survive cleanup.
-- Keep `cargo-lambda` pinned and let taiki install it on each job unless its
-  setup time is separately measured as significant.
+For the selected RunsOn Magic Cache/S3 deployment, see the
+[RunsOn guide](../runs-on/README.md). This page keeps the approach
+itself provider-neutral.
 
 ## Why It Works
 
@@ -129,8 +99,6 @@ The cached worktree checkout avoids that false invalidation:
 - uses: Swatinem/rust-cache@v2
   with:
     workspaces: ./app -> ../../target-for-job
-    cache-all-crates: false
-    cache-bin: false
     cache-targets: true
     cache-workspace-crates: true
     shared-key: app-target-v1
@@ -142,26 +110,16 @@ behavior. See
 true/false behavior, workspace/path-dependency examples, cleanup details, and
 upstream source links.
 
-- `cache-all-crates: false` keeps registry cleanup limited to the current
-  dependency graph. Set it to `true` only when another step downloads
+- Leave `cache-all-crates` at its `false` default unless another step downloads
   registry crates outside the current dependency graph, such as a tool built
   through `cargo install` or an install action's source-build fallback.
-- `cache-bin: false` avoids caching Cargo-installed binaries because this
-  workflow has none that `rust-cache` can reuse.
+- Set `cache-bin` according to whether the workflow has Cargo-registered
+  installed binaries to preserve.
 - `cache-targets: true` includes the configured target directory; this is the
   upstream default and is explicit here because target state is part of the
   approach.
 - `cache-workspace-crates: true` retains matching target artifacts for Cargo
   workspace members, including normal in-tree path crates.
-
-Installing `cargo-lambda` through `taiki-e/install-action` normally downloads
-a prebuilt release binary; it does not require `cache-all-crates: true`. It
-also does not benefit from `cache-bin: true`: a binary extracted into
-`$CARGO_HOME/bin` lacks Cargo's installed-crate metadata and is removed by
-`rust-cache` cleanup, while taiki's fallback install directory is outside
-Cargo home. See
-[`rust-cache` behavior](../concepts/rust-cache-behavior.md#tool-example-cargo-lambda)
-for the distinction between registry crates and installed Cargo binaries.
 
 The options still do not produce a complete target snapshot, and exact cache
 hits are not replaced in the post step.

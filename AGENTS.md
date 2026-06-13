@@ -17,6 +17,7 @@ only the pages relevant to the task instead of loading the entire archive.
 | Task | Use |
 | --- | --- |
 | Choose or compare cache approaches | `docs/approaches/README.md` |
+| Apply the selected RunsOn Magic Cache design | `docs/runs-on/README.md` |
 | Explain Cargo freshness/no-op behavior | `docs/concepts/cargo-freshness-model.md` |
 | Map Cargo state paths to cache coverage | `docs/concepts/cargo-path-coverage.md` |
 | Explain cache primitives | `docs/concepts/cache-primitives.md` |
@@ -34,6 +35,7 @@ only the pages relevant to the task instead of loading the entire archive.
 Preserve these conclusions unless new evidence is added to `docs/results/`:
 
 - Recommended default: `Swatinem/rust-cache` plus an mtime-preserving cached worktree checkout.
+- Keep the selected RunsOn deployment canonical in `docs/runs-on/README.md`.
 - Proven workaround: split Cargo home and full target caching, with a source-keyed target cache restored after `rust-cache`.
 - EBS/filesystem snapshots provide the strongest local no-op fidelity, but with higher operational complexity.
 - S3 Files was rejected for Cargo target no-op state in these experiments because remote metadata/read behavior dominated even when Cargo was logically clean.
@@ -51,6 +53,7 @@ and verify the relevant upstream documentation.
 - Keep chronological experiment history in `docs/results/experiment-log.md`.
 - Keep diagnostic procedures in `docs/operations/diagnosing-rebuilds.md`.
 - Keep `Swatinem/rust-cache` input and cleanup semantics in `docs/concepts/rust-cache-behavior.md`.
+- Keep RunsOn runner, Magic Cache, and S3 backend guidance in `docs/runs-on/README.md`.
 - Keep copyable workflow examples in `examples/workflows/`.
 - Link to canonical pages instead of repeating long tables or result summaries.
 

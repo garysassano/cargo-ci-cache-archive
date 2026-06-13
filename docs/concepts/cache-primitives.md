@@ -7,10 +7,14 @@ Cargo CI caching experiments used three different storage primitives. They are n
 Examples:
 
 - `actions/cache`
-- RunsOn Magic Cache as the backend for `actions/cache`
+- An `actions/cache`-compatible backend
 - `Swatinem/rust-cache`, which builds on top of archive cache semantics
 
-RunsOn Magic Cache changes the object-storage backend used by `actions/cache`; it does not change archive-cache semantics. The restored state is still selected by a key, downloaded, and extracted into the current filesystem. It is not equivalent to a mounted filesystem snapshot.
+Changing the backend used by `actions/cache` does not change archive-cache
+semantics. The restored state is still selected by a key, downloaded, and
+extracted into the current filesystem. It is not equivalent to a mounted
+filesystem snapshot. See the [RunsOn guide](../runs-on/README.md)
+for the selected backend implementation.
 
 Archive cache behavior:
 

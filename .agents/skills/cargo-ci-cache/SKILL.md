@@ -17,6 +17,7 @@ Read only the references needed for the task:
 | Task | Read |
 | --- | --- |
 | Choose or compare approaches | [Approach comparison](../../../docs/approaches/README.md) |
+| Apply the RunsOn Magic Cache design | [RunsOn guide](../../../docs/runs-on/README.md) |
 | Explain Cargo freshness | [Cargo freshness model](../../../docs/concepts/cargo-freshness-model.md) |
 | Map state paths to cache coverage | [Cargo path coverage](../../../docs/concepts/cargo-path-coverage.md) |
 | Explain `Swatinem/rust-cache` inputs or cleanup | [`rust-cache` behavior](../../../docs/concepts/rust-cache-behavior.md) |
@@ -49,6 +50,8 @@ When applying this skill to another repository:
 ## Core Decision
 
 Default to `Swatinem/rust-cache` plus an mtime-preserving cached worktree checkout.
+Use the [RunsOn guide](../../../docs/runs-on/README.md) when
+applying that decision on RunsOn.
 
 Use alternatives only when the workload justifies them:
 
@@ -140,5 +143,7 @@ When editing this repository:
 - Keep empirical numbers in [empirical results](../../../docs/results/empirical-results.md).
 - Keep chronological history in [the experiment log](../../../docs/results/experiment-log.md).
 - Keep procedures in [`docs/operations/`](../../../docs/operations/README.md).
+- Keep RunsOn-specific deployment guidance in
+  [`docs/runs-on/`](../../../docs/runs-on/README.md).
 - Keep examples generic under [`examples/`](../../../examples/README.md).
 - Run the validation commands in the repository `AGENTS.md`.

@@ -27,5 +27,6 @@ Avoid combining `Swatinem/rust-cache` with a full Cargo build-state snapshot for
 Keep diagrams beside the canonical explanation of the behavior they represent:
 
 - [`rust-cache` with mtime-preserving checkout](rust-cache-mtime-checkout.md#architecture)
+- [RunsOn Magic Cache backend and job flow](../runs-on/README.md)
 - [Filesystem snapshot lifecycle](ebs-snapshot.md#architecture)
 - [Cargo freshness decision model](../concepts/cargo-freshness-model.md)
