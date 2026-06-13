@@ -17,6 +17,7 @@ Read only the references needed for the task:
 | Task | Read |
 | --- | --- |
 | Choose or compare approaches | [Approach comparison](../../../docs/approaches/README.md) |
+| Configure fast CI tool setup | [Mise tool setup](../../../docs/operations/mise-tool-setup.md) |
 | Explain Cargo freshness | [Cargo freshness model](../../../docs/concepts/cargo-freshness-model.md) |
 | Map state paths to cache coverage | [Cargo path coverage](../../../docs/concepts/cargo-path-coverage.md) |
 | Diagnose rebuilds | [Diagnosing rebuilds](../../../docs/operations/diagnosing-rebuilds.md) |
@@ -47,12 +48,13 @@ When applying this skill to another repository:
 
 ## Core Decision
 
-Default to `Swatinem/rust-cache` plus an mtime-preserving cached worktree checkout.
+Default to `mise-action` for tool setup plus `Swatinem/rust-cache` and an mtime-preserving cached worktree checkout for Cargo state.
 
 Use alternatives only when the workload justifies them:
 
 | Need | Recommendation |
 | --- | --- |
+| Fast repeated setup for Rust/Zig/Cargo helper tools | `mise-action` with inline `mise_toml` and RunsOn Magic Cache |
 | Maintained, simple, fast repeated-run CI | `Swatinem/rust-cache` plus mtime-preserving checkout |
 | True no-op for repeated generated-code/build-script outliers | Source-keyed full target cache restored after `rust-cache` |
 | Maximum local no-op fidelity and acceptable infra overhead | Filesystem snapshot / EBS snapshot layout |
@@ -91,6 +93,8 @@ build with explicit CARGO_TARGET_DIR
 ```
 
 Do not restore the full target directory before `rust-cache`; `rust-cache` cleanup can remove workspace artifacts.
+
+Bump the target-key namespace after changing build or setup semantics, including switching tool installers to mise, moving Rust/rustup home, changing targets, or changing build flags.
 
 Fast source key shape:
 

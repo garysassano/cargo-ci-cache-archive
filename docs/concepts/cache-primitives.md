@@ -29,6 +29,7 @@ Best for:
 - Dependency-oriented target artifacts.
 - Setup action tarballs.
 - Tool installer caches.
+- `mise-action` tool installs under `MISE_DATA_DIR`.
 
 Limitations:
 
@@ -100,5 +101,6 @@ Limitations for Cargo target state:
 | Avoid dependency downloads | Archive cache / `rust-cache` |
 | Preserve source mtimes | Cached worktree or filesystem snapshot |
 | Preserve full local target state | Filesystem snapshot or source-keyed target archive |
+| Cache setup tools and toolchains | Archive cache through `mise-action` |
 | Share state across workers without archives | Network filesystem, but not ideal for Cargo target no-op |
-| Keep workflow simple and maintained | `Swatinem/rust-cache` plus mtime-preserving checkout |
+| Keep workflow simple and maintained | `mise-action` plus `Swatinem/rust-cache` plus mtime-preserving checkout |
