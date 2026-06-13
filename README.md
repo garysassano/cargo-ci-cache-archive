@@ -30,6 +30,18 @@ This is the pragmatic default because it relies on maintained upstream behavior,
 | Copy or adapt workflow examples | [Examples](examples/README.md) |
 | Refresh this archive later | [Maintenance Checklist](docs/operations/maintenance-checklist.md) |
 
+## Agent Skill
+
+The repository-scoped skill is at
+[`.agents/skills/cargo-ci-cache/SKILL.md`](.agents/skills/cargo-ci-cache/SKILL.md).
+Agents that discover `.agents/skills/` can use it to select the relevant
+research, diagnostics, and workflow examples without loading the entire
+archive.
+
+The skill intentionally links to the canonical repository documents instead
+of copying them into the skill directory. Consume it from this repository
+checkout; copying only the skill folder will omit those references.
+
 ## Core Mental Model
 
 Cargo no-op behavior requires a consistent set of proof artifacts:

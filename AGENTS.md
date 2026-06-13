@@ -2,6 +2,16 @@
 
 This repository archives Rust/Cargo CI cache research, decisions, results, and copyable GitHub Actions examples. Optimize edits for accuracy, low duplication, and easy retrieval by other agents.
 
+## Agent Skill
+
+Use `.agents/skills/cargo-ci-cache/SKILL.md` for tasks that apply this archive
+to a Rust CI workflow, compare cache strategies, or diagnose Cargo rebuilds.
+The skill is repository-scoped and links back to the canonical documents and
+examples in this repository.
+
+For simple repository maintenance, use the routing table below directly. Read
+only the pages relevant to the task instead of loading the entire archive.
+
 ## Canonical Entry Points
 
 | Task | Use |
@@ -11,6 +21,8 @@ This repository archives Rust/Cargo CI cache research, decisions, results, and c
 | Map Cargo state paths to cache coverage | `docs/concepts/cargo-path-coverage.md` |
 | Explain cache primitives | `docs/concepts/cache-primitives.md` |
 | Diagnose rebuilds | `docs/operations/diagnosing-rebuilds.md` |
+| Review measured evidence | `docs/results/empirical-results.md` |
+| Review experiment chronology | `docs/results/experiment-log.md` |
 | Refresh examples and assumptions | `docs/operations/maintenance-checklist.md` |
 | Copy workflow shapes | `examples/README.md` and `examples/workflows/` |
 
@@ -23,6 +35,11 @@ Preserve these conclusions unless new evidence is added to `docs/results/`:
 - EBS/filesystem snapshots provide the strongest local no-op fidelity, but with higher operational complexity.
 - S3 Files was rejected for Cargo target no-op state in these experiments because remote metadata/read behavior dominated even when Cargo was logically clean.
 - Do not mix full filesystem snapshots with `rust-cache` on the same `target/` or `$CARGO_HOME` paths.
+
+Treat these as archived conclusions, not timeless upstream facts. Before
+changing action versions, service behavior, or recommendations that depend on
+current external behavior, follow `docs/operations/maintenance-checklist.md`
+and verify the relevant upstream documentation.
 
 ## Duplication Rules
 
@@ -49,10 +66,11 @@ Run these checks after relevant edits:
 ```bash
 git diff --check
 actionlint examples/workflows/*.yml
-ruby -e 'require "yaml"; Dir["examples/workflows/*.{yml,yaml}"].each { |f| YAML.load_file(f) }'
+yq eval-all --exit-status 'true' examples/workflows/*.yml
 ```
 
-If `actionlint` is unavailable, say so and still run YAML parsing.
+If `actionlint` or `yq` is unavailable, say so and use another parser declared
+in `~/.config/mise/config.toml`.
 
 ## Scope
 
