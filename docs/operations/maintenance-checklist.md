@@ -14,6 +14,8 @@ Use this checklist when refreshing the archive or copying its examples into a li
 - Re-check `Swatinem/rust-cache` release notes before changing the recommendation, especially around target keys, `cache-workspace-crates`, incremental state, and save cleanup behavior.
 - Re-check Cargo checksum freshness status before changing source-mtime guidance.
 - Keep the source-keyed target-cache workaround documented until upstream target keys include workspace source state or an equivalent mechanism exists.
+- When using source-keyed target caches, include build-command semantics in the target key, for example `locked-v1-<source-hash>`, and bump the namespace after changing build flags, target triples, profiles, features, or wrappers.
+- Prefer `--locked` for CI artifact builds. Do not switch to `--frozen` / `--offline` with `rust-cache` unless complete local registry/index state is known to be restored.
 - Preserve the warning not to mix full filesystem snapshots with `rust-cache` on the same `target/` or `$CARGO_HOME` paths.
 
 ## AWS / RunsOn Notes

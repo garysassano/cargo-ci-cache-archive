@@ -67,7 +67,30 @@ Tradeoff:
 
 An intermediate dependency-closure key using `cargo metadata` was more precise, but it added about a minute per job in CI and was too expensive.
 
+The source key should include a small manual namespace for build-command semantics:
+
+```yaml
+target-key: locked-v1-${{ steps.source-key.outputs.hash }}
+```
+
+Increment the namespace when changing build flags, target triples, Cargo features,
+profiles, compiler wrappers, or other options that can affect Cargo fingerprints.
+If the command changes but the target key does not, Cargo may rebuild against an
+exact target-cache hit and the cache action will correctly skip saving because
+the key was exact.
+
 The repeated outliers this fixed were generated-code/build-script chains. Tight `cargo:rerun-if-changed` hints are still good build-script hygiene, but they do not fix stale exact target-cache restores when the target cache key ignores workspace source state.
+
+## Cargo Flag Notes
+
+Use `--locked` for CI artifact builds. It ensures `Cargo.lock` is up to date and
+prevents dependency resolution drift. It does not imply offline mode, so Cargo may
+still print `Updating crates.io index` even when no compilation happens.
+
+Do not assume `--frozen` or `--offline` will work with `rust-cache`. Those modes
+require complete local registry/index state. `rust-cache` intentionally prunes
+Cargo home to keep archives small, which can make offline registry operations
+fail even when normal cached builds are fast and correct.
 
 ## Verified Results
 
@@ -78,6 +101,17 @@ Previously slow generated-code/build-script dependency chains became no-op:
 | Message API style job | source-keyed target cache hit | `Finished ... in 0.26s`, no `Compiling` lines. |
 | Provider API style job | source-keyed target cache hit | `Finished ... in 0.24s`, no `Compiling` lines. |
 | Provider callback style job | source-keyed target cache hit | `Finished ... in 0.31s`, no `Compiling` lines. |
+
+A native `target-key` prototype in a local `rust-cache` fork was also tested
+against the same workload. It removed the separate `actions/cache` target step by
+making `rust-cache` split Cargo home and target caches internally. After one seed
+run, repeated runs restored exact Cargo and target cache hits across all tested
+binary and UI jobs. Cargo produced no `Compiling` lines; remaining build phases
+were around 0.3 seconds.
+
+This validates the native action design, but the archive should keep the current
+copyable workaround until upstream `Swatinem/rust-cache` releases equivalent
+support.
 
 ## Why It Is Not The Default
 
