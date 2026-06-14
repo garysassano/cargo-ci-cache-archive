@@ -10,3 +10,7 @@ This category owns stable explanations of Cargo's build-state model and the cach
 | [Cargo Path Coverage](cargo-path-coverage.md) | Maps Cargo state paths to cache approaches. |
 | [Cache Primitives](cache-primitives.md) | Compares archive cache, filesystem snapshot, and network filesystem semantics. |
 | [`Swatinem/rust-cache` Behavior](rust-cache-behavior.md) | Explains relevant input defaults, save cleanup, workspace-crate handling, and exact-hit behavior. |
+
+## Page Shape
+
+Concept pages open with a one-line scope statement, then explain the stable model or semantics, then give examples, caveats, and official references where applicable.

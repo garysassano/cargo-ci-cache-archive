@@ -115,4 +115,4 @@ The [`rust-cache` vs EBS snapshot evidence](../evidence/rust-cache-vs-snapshot.m
 
 ## Decision
 
-Keep this as an archived alternative for workloads where maximum local no-op fidelity justifies infrastructure, lifecycle, and credential-management complexity. Do not combine it with `rust-cache` on the same Cargo home or target paths.
+Keep this as an archived alternative for workloads where maximum local no-op fidelity justifies infrastructure, lifecycle, and credential-management complexity. Do not combine it with `rust-cache` on the same Cargo home or target paths; see the [canonical compatibility rule](../concepts/cargo-path-coverage.md#compatibility-rule-canonical).

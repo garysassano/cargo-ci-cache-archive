@@ -16,3 +16,7 @@ This category preserves the test setup, observations, and interpretation behind 
 - Keep current recommendations and tradeoffs in [`docs/approaches/`](../approaches/README.md).
 - Keep procedures in [`docs/operations/`](../operations/README.md).
 - Prefer focused evidence records over a chronological experiment diary.
+
+## Page Shape
+
+Evidence pages follow this order: question, test setup or progression, observations, interpretation, limitations, and implications.

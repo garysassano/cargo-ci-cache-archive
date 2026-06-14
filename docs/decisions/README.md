@@ -13,7 +13,7 @@ Treat these as archived conclusions, not timeless upstream facts. They reflect t
 | D3 | Keep the source-keyed full-target cache (split Cargo home and target, target restored after `rust-cache`) as a proven workaround for repeated workspace rebuild outliers. | Proven workaround | [Approach](../approaches/rust-cache-source-keyed-target-cache.md), [evidence](../evidence/cached-worktree-and-target-cache.md) |
 | D4 | Treat EBS/filesystem snapshots as the strongest local no-op fidelity option, but as an archived alternative because of operational and lifecycle complexity. | Archived alternative | [Approach](../approaches/ebs-snapshot.md), [evidence](../evidence/rust-cache-vs-snapshot.md) |
 | D5 | Do not use S3 Files for Cargo target or registry no-op state; remote metadata/read behavior dominated even when Cargo was logically clean. | Rejected for this use | [Approach](../approaches/s3-files.md), [evidence](../evidence/s3-files.md) |
-| D6 | Do not mix a full filesystem snapshot with `rust-cache` on the same `target/` or `$CARGO_HOME` paths. | Compatibility rule | [Approach comparison](../approaches/README.md), [path coverage](../concepts/cargo-path-coverage.md) |
+| D6 | Do not mix a full filesystem snapshot with `rust-cache` on the same `target/` or `$CARGO_HOME` paths. | Compatibility rule | [Canonical rule](../concepts/cargo-path-coverage.md#compatibility-rule-canonical) |
 
 ## Detailed Findings
 

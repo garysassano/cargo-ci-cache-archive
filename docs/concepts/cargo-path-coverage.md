@@ -64,6 +64,8 @@ An EBS snapshot preserves the mounted filesystem subtree. If the path is under t
 
 The archived EBS snapshot approach covers these paths with greater filesystem continuity, but it is not the selected deployment because of its operational and lifecycle complexity.
 
-## Important Warning
+## Compatibility Rule (Canonical)
 
-Avoid combining `Swatinem/rust-cache` with a full Cargo build-state snapshot for the same paths. `rust-cache` restores and prunes an archive-oriented subset, while a snapshot depends on preserving filesystem continuity. Mixing both for `target/` or `$CARGO_HOME` can rewrite files, alter mtimes, and reduce the snapshot value for local no-op behavior.
+This is the canonical statement of decision [D6](../decisions/README.md). Other pages reference it instead of restating it.
+
+Avoid combining `Swatinem/rust-cache` with a full Cargo build-state snapshot for the same `target/` or `$CARGO_HOME` paths. `rust-cache` restores and prunes an archive-oriented subset, while a snapshot depends on preserving filesystem continuity and mtimes. Mixing both for those paths can rewrite files, alter mtimes, and reduce the snapshot value for local no-op behavior.

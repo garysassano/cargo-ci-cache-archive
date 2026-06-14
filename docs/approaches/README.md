@@ -21,7 +21,7 @@ This category owns architecture choices, tradeoffs, status, and decisions. Indiv
 
 ## Compatibility Rule
 
-Avoid combining `Swatinem/rust-cache` with a full Cargo build-state snapshot for the same `target/` or `$CARGO_HOME` paths. `rust-cache` restores and prunes an archive-oriented subset, while a snapshot depends on preserving filesystem continuity and mtimes.
+Do not combine `Swatinem/rust-cache` with a full Cargo build-state snapshot for the same `target/` or `$CARGO_HOME` paths. See the [canonical compatibility rule](../concepts/cargo-path-coverage.md#compatibility-rule-canonical) for why.
 
 ## Architecture Diagrams
 
@@ -35,3 +35,7 @@ Keep diagrams beside the canonical explanation of the behavior they represent:
 - [Filesystem snapshot lifecycle](ebs-snapshot.md#architecture)
 - [S3 Files network-filesystem experiment](s3-files.md#architecture)
 - [Cargo freshness decision model](../concepts/cargo-freshness-model.md)
+
+## Page Shape
+
+Approach pages follow this order where applicable: status summary, related files, design/architecture, operational details, strengths, limitations, evidence, and decision.

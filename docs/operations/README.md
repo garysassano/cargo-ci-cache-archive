@@ -9,3 +9,7 @@ This category owns procedures, configuration guidance, diagnosis, and maintenanc
 | [Diagnosing Cargo Rebuilds In CI](diagnosing-rebuilds.md) | Explains how to use Cargo fingerprint logs and common rebuild triage checks. |
 | [Maintenance Checklist](maintenance-checklist.md) | Checklist for refreshing examples, action versions, and archived assumptions. |
 | [Mise Tool Setup](mise-tool-setup.md) | Supplemental setup guidance for caching Rust-adjacent tools with `mise-action` and RunsOn Magic Cache. |
+
+## Page Shape
+
+Operation pages open with a one-line purpose statement, then give the recommended procedure or configuration, ordering, caveats, and references.

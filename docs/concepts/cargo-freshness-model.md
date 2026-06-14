@@ -1,5 +1,7 @@
 # Cargo Freshness Model
 
+This page explains how Cargo decides whether each build unit is fresh or dirty, which is the basis for every cache approach in this archive.
+
 Cargo does not only look for compiled files. It decides whether every build unit is fresh by combining source inputs, target metadata, dep-info files, fingerprints, build-script outputs, registry sources, and environment/toolchain context.
 
 The useful mental model is:

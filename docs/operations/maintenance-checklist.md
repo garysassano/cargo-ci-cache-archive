@@ -24,7 +24,7 @@ Use this checklist when refreshing the archive or copying its examples into a li
 - Also bump the target-key namespace after changing setup semantics that affect Cargo's environment, such as moving Rust/rustup home, switching from Rust/Zig installer actions to mise, or changing Cargo helper installation backends.
 - Prefer `--locked` for CI artifact builds. Do not switch to `--frozen` / `--offline` with `rust-cache` unless complete local registry/index state is known to be restored.
 - Prefer `mise-action` with inline `mise_toml` for stable setup tools such as Zig, Rust targets, `cargo-lambda`, `trunk`, and `cargo-binstall`; do not rely on `rust-cache cache-bin=true` as the only cache for those tools when setup time matters.
-- Preserve the warning not to mix full filesystem snapshots with `rust-cache` on the same `target/` or `$CARGO_HOME` paths.
+- Preserve the [canonical compatibility rule](../concepts/cargo-path-coverage.md#compatibility-rule-canonical) against mixing full filesystem snapshots with `rust-cache` on the same `target/` or `$CARGO_HOME` paths.
 
 ## Platform Guidance
 

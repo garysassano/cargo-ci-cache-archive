@@ -1,6 +1,6 @@
 # Diagnosing Cargo Rebuilds In CI
 
-Use this page when a supposedly cached Cargo build still recompiles crates.
+This page is a triage procedure for when a supposedly cached Cargo build still recompiles crates.
 
 ## Related Files
 
