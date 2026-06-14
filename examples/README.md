@@ -13,7 +13,7 @@ For CI tool setup, prefer inline `mise_toml` with `jdx/mise-action`; see [Mise T
 | [`rust-cache-source-keyed-target-cache.yml`](workflows/rust-cache-source-keyed-target-cache.yml) | Proven workaround combining `rust-cache`-managed Cargo home with a separate source-keyed target cache restored afterward. | [`docs/approaches/rust-cache-source-keyed-target-cache.md`](../docs/approaches/rust-cache-source-keyed-target-cache.md) |
 | [`ebs-snapshot.yml`](workflows/ebs-snapshot.yml) | EBS/filesystem snapshot layout for high-fidelity Cargo no-op behavior. | [`docs/approaches/ebs-snapshot.md`](../docs/approaches/ebs-snapshot.md) |
 | [`cargo-lambda-snapshot-matrix.yml`](workflows/cargo-lambda-snapshot-matrix.yml) | Sanitized RunsOn snapshot fork workflow shape for per-Lambda Cargo build-state snapshots. | [`docs/approaches/ebs-snapshot.md`](../docs/approaches/ebs-snapshot.md) |
-| [`s3-files-cargo-target.yml`](workflows/s3-files-cargo-target.yml) | S3 Files target-cache experiment shape. Not recommended for Cargo target no-op state based on these experiments. | [`docs/approaches/s3-files.md`](../docs/approaches/s3-files.md) |
+| [`s3-files.yml`](workflows/s3-files.yml) | S3 Files target-cache experiment shape. Not recommended for Cargo target no-op state based on these experiments. | [`docs/approaches/s3-files.md`](../docs/approaches/s3-files.md) |
 | [`cargo-fingerprint-diagnostics.yml`](workflows/cargo-fingerprint-diagnostics.yml) | Diagnostic workflow for fingerprint and dirty-rebuild investigation. | [`docs/operations/diagnosing-rebuilds.md`](../docs/operations/diagnosing-rebuilds.md) |
 
 ## Local Actions

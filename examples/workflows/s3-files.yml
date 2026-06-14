@@ -1,4 +1,4 @@
-name: S3 Files Cargo Target
+name: S3 Files
 
 on:
   workflow_dispatch:
