@@ -4,13 +4,9 @@ This repository archives Rust/Cargo CI cache research, decisions, results, and c
 
 ## Agent Skill
 
-Use `.agents/skills/cargo-ci-cache/SKILL.md` for tasks that apply this archive
-to a Rust CI workflow, compare cache strategies, diagnose Cargo rebuilds, or
-modify the local snapshot and S3 Files action examples. The skill is
-repository-scoped and links back to canonical documents and examples.
+Use `.agents/skills/cargo-ci-cache/SKILL.md` for tasks that apply this archive to a Rust CI workflow, compare cache strategies, diagnose Cargo rebuilds, or modify the local snapshot and S3 Files action examples. The skill is repository-scoped and links back to canonical documents and examples.
 
-For simple repository maintenance, use the routing table below directly. Read
-only the pages relevant to the task instead of loading the entire archive.
+For simple repository maintenance, use the routing table below directly. Read only the pages relevant to the task instead of loading the entire archive.
 
 ## Canonical Entry Points
 
@@ -18,6 +14,7 @@ only the pages relevant to the task instead of loading the entire archive.
 | --- | --- |
 | Choose or compare cache approaches | `docs/approaches/README.md` |
 | Apply the selected RunsOn Magic Cache design | `docs/runs-on/README.md` |
+| Configure fast CI tool setup | `docs/operations/mise-tool-setup.md` |
 | Explain Cargo freshness/no-op behavior | `docs/concepts/cargo-freshness-model.md` |
 | Map Cargo state paths to cache coverage | `docs/concepts/cargo-path-coverage.md` |
 | Explain cache primitives | `docs/concepts/cache-primitives.md` |
@@ -35,16 +32,14 @@ only the pages relevant to the task instead of loading the entire archive.
 Preserve these conclusions unless new evidence is added to `docs/results/`:
 
 - Recommended default: `Swatinem/rust-cache` plus an mtime-preserving cached worktree checkout.
+- Recommended setup layer on RunsOn: `mise-action` backed by Magic Cache for Rust, Zig, and helper tools.
 - Keep the selected RunsOn deployment canonical in `docs/runs-on/README.md`.
 - Proven workaround: split Cargo home and full target caching, with a source-keyed target cache restored after `rust-cache`.
 - EBS/filesystem snapshots provide the strongest local no-op fidelity, but with higher operational complexity.
 - S3 Files was rejected for Cargo target no-op state in these experiments because remote metadata/read behavior dominated even when Cargo was logically clean.
 - Do not mix full filesystem snapshots with `rust-cache` on the same `target/` or `$CARGO_HOME` paths.
 
-Treat these as archived conclusions, not timeless upstream facts. Before
-changing action versions, service behavior, or recommendations that depend on
-current external behavior, follow `docs/operations/maintenance-checklist.md`
-and verify the relevant upstream documentation.
+Treat these as archived conclusions, not timeless upstream facts. Before changing action versions, service behavior, or recommendations that depend on current external behavior, follow `docs/operations/maintenance-checklist.md` and verify the relevant upstream documentation.
 
 ## Duplication Rules
 
@@ -57,12 +52,17 @@ and verify the relevant upstream documentation.
 - Keep copyable workflow examples in `examples/workflows/`.
 - Link to canonical pages instead of repeating long tables or result summaries.
 
+## Markdown Style
+
+- Keep each normal prose paragraph on one source line and let the renderer wrap it to the available width.
+- Do not manually hard-wrap prose. Preserve structural line breaks in lists, tables, blockquotes, code fences, Mermaid diagrams, YAML, and front matter.
+
 ## Example Maintenance
 
 When editing workflow examples:
 
 - Check current GitHub-owned action majors for `actions/checkout`, `actions/cache`, `actions/upload-artifact`, and `actions/download-artifact`.
-- Keep `Swatinem/rust-cache@v2` and `dtolnay/rust-toolchain@stable` unless there is a deliberate reason to change them.
+- Keep `jdx/mise-action@v4`, `Swatinem/rust-cache@v2`, and `dtolnay/rust-toolchain@stable` unless there is a deliberate reason to change them.
 - Preserve source-keyed target cache ordering: restore `rust-cache` first with `cache-targets: false`, then restore the full target cache.
 - Preserve the generic nature of examples; do not add app-specific package names, secrets, runner labels, or deployment steps unless a page explicitly documents them as examples.
 
@@ -77,8 +77,7 @@ yq eval-all --exit-status 'true' examples/workflows/*.yml examples/actions/*/act
 (cd examples/actions/snapshot && go test ./...)
 ```
 
-If `actionlint`, `yq`, or `go` is unavailable, say so and use a compatible
-tool declared in `~/.config/mise/config.toml`.
+If `actionlint`, `yq`, or `go` is unavailable, say so and use a compatible tool declared in `~/.config/mise/config.toml`.
 
 ## Scope
 

@@ -146,10 +146,7 @@ Decision:
 
 ## Native `rust-cache` Target-Key Prototype
 
-A local `rust-cache` prototype added a native `target-key` input that splits Cargo
-home and target caches inside `rust-cache` itself. The target cache key includes a
-user-provided source fingerprint, while Cargo home keeps the existing dependency
-key strategy.
+A local `rust-cache` prototype added a native `target-key` input that splits Cargo home and target caches inside `rust-cache` itself. The target cache key includes a user-provided source fingerprint, while Cargo home keeps the existing dependency key strategy.
 
 Test shape:
 
@@ -164,45 +161,30 @@ build with explicit per-job CARGO_TARGET_DIR
 Important result:
 
 - A seed run created the new source-keyed target caches.
-- A repeated run restored exact Cargo-home and target-cache hits for all tested
-  binary and UI jobs.
+- A repeated run restored exact Cargo-home and target-cache hits for all tested binary and UI jobs.
 - Cargo build phases were around 0.3 seconds.
 - No `Compiling` lines were emitted in the repeated run.
 
 Keying lesson:
 
 - The target key must include build-command semantics, not only source state.
-- Adding `--locked` changed Cargo freshness enough that the first run against the
-  old source-only target key rebuilt some workspace artifacts.
-- Prefixing the target key with a namespace such as `locked-v1-` created a new
-  lineage; after seeding that lineage, repeated runs were no-op again.
+- Adding `--locked` changed Cargo freshness enough that the first run against the old source-only target key rebuilt some workspace artifacts.
+- Prefixing the target key with a namespace such as `locked-v1-` created a new lineage; after seeding that lineage, repeated runs were no-op again.
 
 Cargo flag lesson:
 
-- `--locked` is appropriate for CI artifact builds and should be part of the
-  target-key namespace when introduced.
-- `--locked` does not suppress `Updating crates.io index`; it only prevents
-  modifying `Cargo.lock`.
-- `--frozen` / `--offline` failed with the `rust-cache`-managed Cargo home,
-  because offline mode needs complete local registry/index state while
-  `rust-cache` intentionally prunes Cargo home.
+- `--locked` is appropriate for CI artifact builds and should be part of the target-key namespace when introduced.
+- `--locked` does not suppress `Updating crates.io index`; it only prevents modifying `Cargo.lock`.
+- `--frozen` / `--offline` failed with the `rust-cache`-managed Cargo home, because offline mode needs complete local registry/index state while `rust-cache` intentionally prunes Cargo home.
 
 Tool-cache lesson:
 
-- `cache-bin=true` did not remove the need for setup actions to install helper
-  commands such as `cargo-lambda` and `trunk` on every job in the tested workflow.
-- Treat Cargo-installed helper binaries and frontend-managed tools as setup state,
-  not Cargo freshness proof.
-- Preinstall stable helper tools in the runner image, use the setup action's own
-  cache when available, or cache the tool's own cache directory explicitly.
-- For Trunk, the remaining repeated-run time came mostly from its own pipeline:
-  pre-build hook, helper tool downloads/installs, wasm processing, and dist
-  application, rather than from missing Cargo target artifacts.
+- `cache-bin=true` did not remove the need for setup actions to install helper commands such as `cargo-lambda` and `trunk` on every job in the tested workflow.
+- Treat Cargo-installed helper binaries and frontend-managed tools as setup state, not Cargo freshness proof.
+- Preinstall stable helper tools in the runner image, use the setup action's own cache when available, or cache the tool's own cache directory explicitly.
+- For Trunk, the remaining repeated-run time came mostly from its own pipeline: pre-build hook, helper tool downloads/installs, wasm processing, and dist application, rather than from missing Cargo target artifacts.
 
 Decision:
 
-- Keep the external source-keyed target-cache workaround as the documented copyable
-  approach until native `target-key` support is available from upstream
-  `Swatinem/rust-cache`.
-- If native support lands upstream, update the examples to remove the separate
-  target `actions/cache` step and use `target-key` directly.
+- Keep the external source-keyed target-cache workaround as the documented copyable approach until native `target-key` support is available from upstream `Swatinem/rust-cache`.
+- If native support lands upstream, update the examples to remove the separate target `actions/cache` step and use `target-key` directly.

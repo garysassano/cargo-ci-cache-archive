@@ -35,15 +35,9 @@ This is the pragmatic default because it makes repeated setup of Zig, Rust targe
 
 ## Agent Skill
 
-The repository-scoped skill is at
-[`.agents/skills/cargo-ci-cache/SKILL.md`](.agents/skills/cargo-ci-cache/SKILL.md).
-Agents that discover `.agents/skills/` can use it to select relevant research,
-diagnostics, workflow examples, and local action references without loading the
-entire archive.
+The repository-scoped skill is at [`.agents/skills/cargo-ci-cache/SKILL.md`](.agents/skills/cargo-ci-cache/SKILL.md). Agents that discover `.agents/skills/` can use it to select relevant research, diagnostics, workflow examples, and local action references without loading the entire archive.
 
-The skill intentionally links to canonical repository files instead of copying
-them into the skill directory. Consume it from this repository checkout;
-copying only the skill folder will omit those references.
+The skill intentionally links to canonical repository files instead of copying them into the skill directory. Consume it from this repository checkout; copying only the skill folder will omit those references.
 
 ## Core Mental Model
 

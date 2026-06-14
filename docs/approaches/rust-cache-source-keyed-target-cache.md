@@ -64,10 +64,7 @@ flowchart TD
     clean_home --> rust_cache
 ```
 
-The full target archive restores after `rust-cache`, so `rust-cache` cannot
-prune workspace artifacts from it before the build. Its key includes source
-state, allowing a changed source tree to seed a new target archive instead of
-reusing an immutable stale exact hit indefinitely.
+The full target archive restores after `rust-cache`, so `rust-cache` cannot prune workspace artifacts from it before the build. Its key includes source state, allowing a changed source tree to seed a new target archive instead of reusing an immutable stale exact hit indefinitely.
 
 ## Critical Ordering
 
@@ -118,24 +115,15 @@ The source key should include a small manual namespace for build-command semanti
 target-key: locked-v1-${{ steps.source-key.outputs.hash }}
 ```
 
-Increment the namespace when changing build flags, target triples, Cargo features,
-profiles, compiler wrappers, or other options that can affect Cargo fingerprints.
-If the command changes but the target key does not, Cargo may rebuild against an
-exact target-cache hit and the cache action will correctly skip saving because
-the key was exact.
+Increment the namespace when changing build flags, target triples, Cargo features, profiles, compiler wrappers, or other options that can affect Cargo fingerprints. If the command changes but the target key does not, Cargo may rebuild against an exact target-cache hit and the cache action will correctly skip saving because the key was exact.
 
 The repeated outliers this fixed were generated-code/build-script chains. Tight `cargo:rerun-if-changed` hints are still good build-script hygiene, but they do not fix stale exact target-cache restores when the target cache key ignores workspace source state.
 
 ## Cargo Flag Notes
 
-Use `--locked` for CI artifact builds. It ensures `Cargo.lock` is up to date and
-prevents dependency resolution drift. It does not imply offline mode, so Cargo may
-still print `Updating crates.io index` even when no compilation happens.
+Use `--locked` for CI artifact builds. It ensures `Cargo.lock` is up to date and prevents dependency resolution drift. It does not imply offline mode, so Cargo may still print `Updating crates.io index` even when no compilation happens.
 
-Do not assume `--frozen` or `--offline` will work with `rust-cache`. Those modes
-require complete local registry/index state. `rust-cache` intentionally prunes
-Cargo home to keep archives small, which can make offline registry operations
-fail even when normal cached builds are fast and correct.
+Do not assume `--frozen` or `--offline` will work with `rust-cache`. Those modes require complete local registry/index state. `rust-cache` intentionally prunes Cargo home to keep archives small, which can make offline registry operations fail even when normal cached builds are fast and correct.
 
 ## Verified Results
 
@@ -147,16 +135,9 @@ Previously slow generated-code/build-script dependency chains became no-op:
 | Provider API style job | source-keyed target cache hit | `Finished ... in 0.24s`, no `Compiling` lines. |
 | Provider callback style job | source-keyed target cache hit | `Finished ... in 0.31s`, no `Compiling` lines. |
 
-A native `target-key` prototype in a local `rust-cache` fork was also tested
-against the same workload. It removed the separate `actions/cache` target step by
-making `rust-cache` split Cargo home and target caches internally. After one seed
-run, repeated runs restored exact Cargo and target cache hits across all tested
-binary and UI jobs. Cargo produced no `Compiling` lines; remaining build phases
-were around 0.3 seconds.
+A native `target-key` prototype in a local `rust-cache` fork was also tested against the same workload. It removed the separate `actions/cache` target step by making `rust-cache` split Cargo home and target caches internally. After one seed run, repeated runs restored exact Cargo and target cache hits across all tested binary and UI jobs. Cargo produced no `Compiling` lines; remaining build phases were around 0.3 seconds.
 
-This validates the native action design, but the archive should keep the current
-copyable workaround until upstream `Swatinem/rust-cache` releases equivalent
-support.
+This validates the native action design, but the archive should keep the current copyable workaround until upstream `Swatinem/rust-cache` releases equivalent support.
 
 ## Why It Is Not The Default
 
@@ -167,5 +148,4 @@ Use it if:
 - Generated-code/build-script rebuilds are too expensive.
 - A fork/adapter is warranted because upstream does not support the use case.
 
-Retire or simplify this workaround if upstream `rust-cache` adds equivalent
-source-keyed target caching.
+Retire or simplify this workaround if upstream `rust-cache` adds equivalent source-keyed target caching.

@@ -76,30 +76,11 @@ The rows marked 🎯 and 🧭 are the most important for deciding whether Cargo 
 
 Binaries installed with `cargo install` usually live in `$CARGO_HOME/bin`. Some of those binaries are named `cargo-*` and can be invoked as `cargo <name>`, but the cacheable location is still Cargo home. Rustup components are separate toolchain state. For example, `cargo fmt` is backed by the `rustfmt` Rustup component, so preserving it is toolchain/Rustup state rather than Cargo dependency state.
 
-Some Cargo subcommands and Cargo-backed build frontends also write helper state
-outside `$CARGO_HOME` and `target/`. For example, `cargo-lambda` can use
-`cargo-zigbuild`, which writes linker wrapper/cache state under the platform
-cache directory, normally `$HOME/.cache/cargo-zigbuild` on Linux. Cache that
-directory explicitly when preserving it is worthwhile. For the archived
-snapshot approach, it can instead be placed under the snapshot root by setting
-`XDG_CACHE_HOME` for the Cargo build step. This is still Cargo-helper state, not
-the Zig compiler tarball or rustup toolchain cache.
+Some Cargo subcommands and Cargo-backed build frontends also write helper state outside `$CARGO_HOME` and `target/`. For example, `cargo-lambda` can use `cargo-zigbuild`, which writes linker wrapper/cache state under the platform cache directory, normally `$HOME/.cache/cargo-zigbuild` on Linux. Cache that directory explicitly when preserving it is worthwhile. For the archived snapshot approach, it can instead be placed under the snapshot root by setting `XDG_CACHE_HOME` for the Cargo build step. This is still Cargo-helper state, not the Zig compiler tarball or rustup toolchain cache.
 
-Likewise, frontend build tools can manage their own helper downloads outside the
-Cargo target directory. For example, Trunk can download `tailwindcss`,
-`wasm-bindgen`, and `wasm-opt` into a Trunk-specific cache directory, commonly
-under `$XDG_CACHE_HOME/dev.trunkrs.trunk` on Linux. Restoring Cargo target state
-does not make those helper downloads no-op; cache the helper directory separately
-or preinstall the tools if their setup time matters.
+Likewise, frontend build tools can manage their own helper downloads outside the Cargo target directory. For example, Trunk can download `tailwindcss`, `wasm-bindgen`, and `wasm-opt` into a Trunk-specific cache directory, commonly under `$XDG_CACHE_HOME/dev.trunkrs.trunk` on Linux. Restoring Cargo target state does not make those helper downloads no-op; cache the helper directory separately or preinstall the tools if their setup time matters.
 
-`Swatinem/rust-cache` can include `$CARGO_HOME/bin` when `cache-bin=true`, but
-that is not a complete setup-tool cache strategy. In the tested workflow,
-`taiki-e/install-action` still installed `cargo-lambda` and `trunk` on every job,
-so `cache-bin=true` did not remove that setup cost. The action also records which
-cargo bin entries existed at restore time and removes those pre-existing entries
-before saving, so binaries restored from an earlier cache can be cleaned before
-the next save. Prefer preinstalled runner tools or setup-action caches for stable
-commands such as `cargo-lambda` and `trunk`.
+`Swatinem/rust-cache` can include `$CARGO_HOME/bin` when `cache-bin=true`, but that is not a complete setup-tool cache strategy. In the tested workflow, `taiki-e/install-action` still installed `cargo-lambda` and `trunk` on every job, so `cache-bin=true` did not remove that setup cost. The action also records which cargo bin entries existed at restore time and removes those pre-existing entries before saving, so binaries restored from an earlier cache can be cleaned before the next save. Prefer preinstalled runner tools or setup-action caches for stable commands such as `cargo-lambda` and `trunk`.
 
 ## Where Cargo Stores Inter-Build State
 
@@ -159,13 +140,7 @@ $XDG_CACHE_HOME/cargo-zigbuild/
 $HOME/.cache/cargo-zigbuild/     # default when XDG_CACHE_HOME is unset on Linux
 ```
 
-These directories are not part of Cargo home or the target directory, but they
-can be written by Cargo subcommands or build frontends that participate in the
-build. Cache them explicitly in the selected archive-cache design if their
-setup cost is material. In the archived snapshot design, point
-`XDG_CACHE_HOME` at a directory under the snapshot root only for the relevant
-Cargo build step. Keep unrelated setup-action caches, tool archives, and
-compiler downloads on their normal cache backend.
+These directories are not part of Cargo home or the target directory, but they can be written by Cargo subcommands or build frontends that participate in the build. Cache them explicitly in the selected archive-cache design if their setup cost is material. In the archived snapshot design, point `XDG_CACHE_HOME` at a directory under the snapshot root only for the relevant Cargo build step. Keep unrelated setup-action caches, tool archives, and compiler downloads on their normal cache backend.
 
 ## Example Local Target Shape
 

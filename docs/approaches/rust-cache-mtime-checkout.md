@@ -20,8 +20,7 @@ Cargo builds with explicit CARGO_TARGET_DIR
 
 ## Architecture
 
-The source-worktree cache and `Swatinem/rust-cache` preserve different inputs
-to Cargo's freshness decision:
+The source-worktree cache and `Swatinem/rust-cache` preserve different inputs to Cargo's freshness decision:
 
 ```mermaid
 flowchart TD
@@ -71,15 +70,9 @@ flowchart TD
     clean_rust --> save_rust
 ```
 
-The cached worktree prevents unchanged source files from appearing newer than
-restored outputs. `Swatinem/rust-cache` independently restores Cargo home and
-a dependency-oriented target subset. Both are needed for this approach:
-stable source mtimes do not replace target fingerprints, and restored target
-state does not help if checkout rewrites every source mtime.
+The cached worktree prevents unchanged source files from appearing newer than restored outputs. `Swatinem/rust-cache` independently restores Cargo home and a dependency-oriented target subset. Both are needed for this approach: stable source mtimes do not replace target fingerprints, and restored target state does not help if checkout rewrites every source mtime.
 
-For the selected RunsOn Magic Cache/S3 deployment, see the
-[RunsOn guide](../runs-on/README.md). This page keeps the approach
-itself provider-neutral.
+For the selected RunsOn Magic Cache/S3 deployment, see the [RunsOn guide](../runs-on/README.md). This page keeps the approach itself provider-neutral.
 
 ## Why It Works
 
@@ -104,25 +97,14 @@ The cached worktree checkout avoids that false invalidation:
     shared-key: app-target-v1
 ```
 
-These settings control different parts of the action's restore and cleanup
-behavior. See
-[`Swatinem/rust-cache` Behavior](../concepts/rust-cache-behavior.md) for exact
-true/false behavior, workspace/path-dependency examples, cleanup details, and
-upstream source links.
+These settings control different parts of the action's restore and cleanup behavior. See [`Swatinem/rust-cache` Behavior](../concepts/rust-cache-behavior.md) for exact true/false behavior, workspace/path-dependency examples, cleanup details, and upstream source links.
 
-- `cache-targets: true` includes the configured target directory; this is the
-  upstream default and is explicit here because target state is part of the
-  approach.
-- `cache-workspace-crates: true` retains matching target artifacts for Cargo
-  workspace members, including normal in-tree path crates.
-- Leave `cache-all-crates` at its `false` default unless another step downloads
-  registry crates outside the current dependency graph, such as a tool built
-  through `cargo install` or an install action's source-build fallback.
-- Keep the `cache-bin: true` default when another step installs
-  Cargo-registered binaries. Set it to `false` when the workflow has none.
+- `cache-targets: true` includes the configured target directory; this is the upstream default and is explicit here because target state is part of the approach.
+- `cache-workspace-crates: true` retains matching target artifacts for Cargo workspace members, including normal in-tree path crates.
+- Leave `cache-all-crates` at its `false` default unless another step downloads registry crates outside the current dependency graph, such as a tool built through `cargo install` or an install action's source-build fallback.
+- Keep the `cache-bin: true` default when another step installs Cargo-registered binaries. Set it to `false` when the workflow has none.
 
-The options still do not produce a complete target snapshot, and exact cache
-hits are not replaced in the post step.
+The options still do not produce a complete target snapshot, and exact cache hits are not replaced in the post step.
 
 Use a stable explicit target directory:
 
@@ -159,21 +141,13 @@ These alternatives mainly target source mtime churn. They do not fix `rust-cache
 
 ### Retimer Primary Report
 
-In a [June 29, 2025 comment on `Swatinem/rust-cache#155`](https://github.com/Swatinem/rust-cache/issues/155#issuecomment-3016173641),
-`tmm1` showed a workflow that cached `target/` and `.retimer-state`, restored
-matching source mtimes before `cargo build`, and saved them afterward. The
-workflow was intended to correct source-mtime invalidation but did not make the
-final crate fresh:
+In a [June 29, 2025 comment on `Swatinem/rust-cache#155`](https://github.com/Swatinem/rust-cache/issues/155#issuecomment-3016173641), `tmm1` showed a workflow that cached `target/` and `.retimer-state`, restored matching source mtimes before `cargo build`, and saved them afterward. The workflow was intended to correct source-mtime invalidation but did not make the final crate fresh:
 
 > However, I still observe the final project is always rebuilt (90s+ in my case), even if none of the code has changed.
 
 Cargo reported the remaining rebuild as `stale, unknown reason`.
 
-The linked
-[`retimer.sh` revision](https://gist.github.com/tmm1/0ec42a8a12bf78ece7a43ec6204cbdc3/272b22ecbd6d65971d7cc0b3667ce4f6794c0516)
-stores each Rust source path, SHA-256 digest, and mtime in `.retimer-state`.
-During restore, it reapplies an mtime only when the current file hash still
-matches. Its intended sequence is:
+The linked [`retimer.sh` revision](https://gist.github.com/tmm1/0ec42a8a12bf78ece7a43ec6204cbdc3/272b22ecbd6d65971d7cc0b3667ce4f6794c0516) stores each Rust source path, SHA-256 digest, and mtime in `.retimer-state`. During restore, it reapplies an mtime only when the current file hash still matches. Its intended sequence is:
 
 ```text
 restore .retimer-state and target from cache
@@ -183,39 +157,25 @@ retimer save
 save .retimer-state and target for the next run
 ```
 
-This is useful evidence that correcting source mtimes can remove one class of
-false invalidation without proving that the entire restored Cargo state is
-fresh. The script tracks `*.rs` files outside `target/`; Cargo freshness can
-also depend on manifests, configuration, generated inputs, build-script state,
-dep-info, fingerprints, paths, toolchain, flags, and environment.
+This is useful evidence that correcting source mtimes can remove one class of false invalidation without proving that the entire restored Cargo state is fresh. The script tracks `*.rs` files outside `target/`; Cargo freshness can also depend on manifests, configuration, generated inputs, build-script state, dep-info, fingerprints, paths, toolchain, flags, and environment.
 
 ### Cargo Checksum Freshness
 
-The official
-[Cargo nightly documentation](https://doc.rust-lang.org/nightly/cargo/reference/unstable.html#checksum-freshness)
-describes `-Z checksum-freshness` as replacing file mtimes in Cargo
-fingerprints with file checksum values. It is explicitly intended for
-environments with poor mtime behavior and for CI/CD.
+The official [Cargo nightly documentation](https://doc.rust-lang.org/nightly/cargo/reference/unstable.html#checksum-freshness) describes `-Z checksum-freshness` as replacing file mtimes in Cargo fingerprints with file checksum values. It is explicitly intended for environments with poor mtime behavior and for CI/CD.
 
 ```bash
 cargo +nightly -Z checksum-freshness build --locked
 ```
 
-This directly addresses source files receiving new mtimes during checkout, but
-it is not yet a drop-in stable replacement for the approaches in this archive:
+This directly addresses source files receiving new mtimes during checkout, but it is not yet a drop-in stable replacement for the approaches in this archive:
 
 - It requires nightly Cargo and an unstable `-Z` flag.
-- The checksum algorithm may change without notice between Cargo versions, so
-  restored fingerprints should use the same Cargo version.
+- The checksum algorithm may change without notice between Cargo versions, so restored fingerprints should use the same Cargo version.
 - Files consumed by build scripts continue to use mtimes for now.
-- It changes freshness detection; it does not restore missing artifacts,
-  dep-info, fingerprints, build-script outputs, or other cache state.
+- It changes freshness detection; it does not restore missing artifacts, dep-info, fingerprints, build-script outputs, or other cache state.
 - It does not change `rust-cache` target-key or exact-hit save behavior.
 
-Follow the official
-[tracking issue `cargo#14136`](https://github.com/rust-lang/cargo/issues/14136)
-for stabilization and build-script coverage. The original implementation is
-[`cargo#14137`](https://github.com/rust-lang/cargo/pull/14137).
+Follow the official [tracking issue `cargo#14136`](https://github.com/rust-lang/cargo/issues/14136) for stabilization and build-script coverage. The original implementation is [`cargo#14137`](https://github.com/rust-lang/cargo/pull/14137).
 
 ## Observed Result
 

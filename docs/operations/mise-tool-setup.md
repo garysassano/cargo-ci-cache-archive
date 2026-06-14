@@ -6,7 +6,7 @@ This is not a Cargo cache approach. It is setup guidance that applies before the
 
 ## Why
 
-`mise-action` uses `actions/cache` for its data directory. With RunsOn Magic Cache backing `actions/cache`, repeated installs of Zig, Rust toolchains/targets, `cargo-binstall`, `cargo-lambda`, `trunk`, and similar setup tools become effectively free after the cache is warm.
+`mise-action` uses `actions/cache` for its data directory. With RunsOn Magic Cache backing `actions/cache`, repeated setup of Zig, Rust toolchains/targets, `cargo-binstall`, `cargo-lambda`, `trunk`, and similar tools becomes very fast after the cache is warm.
 
 This removes the need for several separate setup/install actions and avoids paying repeated setup time in every matrix job.
 
@@ -25,7 +25,7 @@ Use inline `mise_toml` in the workflow when the tool set is CI-specific:
       zig = "0.16.0"
       rust = { version = "stable", components = "rustfmt", targets = "aarch64-unknown-linux-gnu" }
       cargo-binstall = "latest"
-      "cargo:cargo-lambda" = { version = "latest", depends = ["rust", "cargo-binstall"] }
+      "cargo:cargo-lambda" = "latest"
 ```
 
 For a Trunk/WebAssembly job:
@@ -40,16 +40,17 @@ For a Trunk/WebAssembly job:
       [tools]
       rust = { version = "stable", components = "rustfmt", targets = "wasm32-unknown-unknown" }
       cargo-binstall = "latest"
-      "cargo:trunk" = { version = "latest", depends = ["rust", "cargo-binstall"] }
+      "cargo:trunk" = "latest"
 ```
-
-Install `cargo-binstall` first so mise can use prebuilt binaries where available instead of compiling tool CLIs.
 
 Prefer the mise Cargo backend for Cargo-distributed tools over the GitHub release backend:
 
 - Use `"cargo:cargo-lambda"` for `cargo-lambda`.
 - Use `"cargo:trunk"` for Trunk.
-- Use explicit `depends = ["rust", "cargo-binstall"]` for Cargo backend tools so the Rust toolchain and `cargo-binstall` exist before mise installs them.
+
+No explicit `depends` option is needed in these examples. The Cargo backend declares Rust as a required dependency and `cargo-binstall` as an optional dependency. When `rust`, `cargo-binstall`, and `cargo:*` tools are present in the same install set, mise orders them so the Cargo tools wait for Rust and `cargo-binstall`. Mise then uses `cargo-binstall` by default when it is available, avoiding source compilation when a compatible prebuilt binary exists.
+
+Use an explicit `depends` option only for an additional project-specific ordering constraint that the backend does not already declare.
 
 ## Environment Variables
 
@@ -110,3 +111,13 @@ The first run after a namespace bump should seed the new target cache. The immed
 Mise setup caching makes tool installation fast. It does not by itself prove Cargo units fresh. Cargo no-op behavior still depends on source mtimes, target fingerprints, dep-info files, build-script outputs, registry source paths, and consistent build semantics.
 
 Keep using the selected Cargo cache approach, such as `Swatinem/rust-cache` plus mtime-preserving checkout, and use source-keyed target caches when workspace rebuild outliers justify them.
+
+## Official References
+
+- [`mise-action` README and cache configuration](https://github.com/jdx/mise-action)
+- [`mise-action` input definitions](https://github.com/jdx/mise-action/blob/main/action.yml)
+- [Mise Cargo backend and `cargo-binstall` behavior](https://mise.jdx.dev/dev-tools/backends/cargo.html)
+- [Mise tool dependency ordering](https://mise.jdx.dev/dev-tools/)
+- [Cargo backend dependency declarations](https://github.com/jdx/mise/blob/40c2a2373c2f85f7f6cadfdfe377db9060686076/src/backend/cargo.rs#L103-L109)
+- [Install dependency graph construction](https://github.com/jdx/mise/blob/40c2a2373c2f85f7f6cadfdfe377db9060686076/src/toolset/tool_deps.rs#L48-L66)
+- [Open Rust cache interaction issue](https://github.com/jdx/mise-action/issues/215)

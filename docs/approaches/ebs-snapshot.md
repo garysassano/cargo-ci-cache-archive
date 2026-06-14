@@ -55,9 +55,7 @@ flowchart TD
     save -->|no| delete
 ```
 
-A filesystem snapshot preserves the mounted subtree as a unit. It does not
-know Cargo semantics; the workflow must place the workspace, Cargo home,
-target directory, and relevant helper caches under the snapshot root.
+A filesystem snapshot preserves the mounted subtree as a unit. It does not know Cargo semantics; the workflow must place the workspace, Cargo home, target directory, and relevant helper caches under the snapshot root.
 
 ## Why It Works
 

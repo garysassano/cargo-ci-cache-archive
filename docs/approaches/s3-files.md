@@ -39,10 +39,7 @@ flowchart LR
     cargo --> metadata --> filesystem
 ```
 
-S3 Files can preserve a shared namespace and make Cargo logically fresh, but
-Cargo still traverses many small files through the network filesystem. In the
-recorded experiments, that metadata/read path dominated the no-op build even
-when compilation itself was unnecessary.
+S3 Files can preserve a shared namespace and make Cargo logically fresh, but Cargo still traverses many small files through the network filesystem. In the recorded experiments, that metadata/read path dominated the no-op build even when compilation itself was unnecessary.
 
 ## Current AWS Mechanics
 

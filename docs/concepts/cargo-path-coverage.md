@@ -32,10 +32,7 @@ This page lists the Cargo paths that matter between builds and how the major CI 
 
 ## Save Behavior
 
-`Swatinem/rust-cache` restore and save behavior is intentionally not symmetric. On save, it prunes state before uploading the archive.
-See [`Swatinem/rust-cache` Behavior](rust-cache-behavior.md) for input defaults,
-true/false examples, and the exact cleanup rules used by the documented
-approaches.
+`Swatinem/rust-cache` restore and save behavior is intentionally not symmetric. On save, it prunes state before uploading the archive. See [`Swatinem/rust-cache` Behavior](rust-cache-behavior.md) for input defaults, true/false examples, and the exact cleanup rules used by the documented approaches.
 
 Important `rust-cache` save behavior:
 
@@ -47,15 +44,7 @@ cleans unused dependencies
 removes pre-existing cargo bin entries
 ```
 
-`cache-bin=true` should not be treated as a general setup-tool cache. In the
-tested workflow it was effectively not useful for `cargo-lambda` or `trunk`,
-because those commands were installed by `taiki-e/install-action` after
-`rust-cache` restored and the install step still ran on every job. Binaries that
-are restored into `$CARGO_HOME/bin` also exist before the `rust-cache` post step
-computes what changed during the job, so they can be considered pre-existing and
-removed before the next save. For stable CI helper tools, prefer a custom runner
-image, the setup action's own cache, or an explicit tool cache. Use `rust-cache`
-for `$CARGO_HOME/bin` only when that tradeoff is acceptable.
+`cache-bin=true` should not be treated as a general setup-tool cache. In the tested workflow it was effectively not useful for `cargo-lambda` or `trunk`, because those commands were installed by `taiki-e/install-action` after `rust-cache` restored and the install step still ran on every job. Binaries that are restored into `$CARGO_HOME/bin` also exist before the `rust-cache` post step computes what changed during the job, so they can be considered pre-existing and removed before the next save. For stable CI helper tools, prefer a custom runner image, the setup action's own cache, or an explicit tool cache. Use `rust-cache` for `$CARGO_HOME/bin` only when that tradeoff is acceptable.
 
 An EBS snapshot preserves the mounted filesystem subtree. If the path is under the snapshot root and was not removed before the post step, it is saved.
 
@@ -73,9 +62,7 @@ An EBS snapshot preserves the mounted filesystem subtree. If the path is under t
 | Zig tarball/download cache | `actions/cache` | Immutable download archives fit keyed archive cache semantics. |
 | Node/package/deployment dependencies | Ecosystem cache or custom AMI | Outside Cargo freshness. |
 
-The archived EBS snapshot approach covers these paths with greater filesystem
-continuity, but it is not the selected deployment because of its operational
-and lifecycle complexity.
+The archived EBS snapshot approach covers these paths with greater filesystem continuity, but it is not the selected deployment because of its operational and lifecycle complexity.
 
 ## Important Warning
 
