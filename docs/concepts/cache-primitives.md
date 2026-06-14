@@ -10,7 +10,7 @@ Examples:
 - An `actions/cache`-compatible backend
 - `Swatinem/rust-cache`, which builds on top of archive cache semantics
 
-Changing the backend used by `actions/cache` does not change archive-cache semantics. The restored state is still selected by a key, downloaded, and extracted into the current filesystem. It is not equivalent to a mounted filesystem snapshot. See the [RunsOn guide](../runs-on/README.md) for the selected backend implementation.
+Changing the backend used by `actions/cache` does not change archive-cache semantics. The restored state is still selected by a key, downloaded, and extracted into the current filesystem. It is not equivalent to a mounted filesystem snapshot. See the [RunsOn guide](../deployments/runs-on/README.md) for the selected backend implementation.
 
 Archive cache behavior:
 

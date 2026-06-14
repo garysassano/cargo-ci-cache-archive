@@ -31,7 +31,7 @@ Keep diagrams beside the canonical explanation of the behavior they represent:
 
 - [`rust-cache` with mtime-preserving checkout](rust-cache-mtime-checkout.md#architecture)
 - [`rust-cache` with source-keyed full target cache](rust-cache-source-keyed-target-cache.md#architecture)
-- [RunsOn Magic Cache backend and job flow](../runs-on/README.md)
+- [RunsOn Magic Cache backend and job flow](../deployments/runs-on/README.md)
 - [Filesystem snapshot lifecycle](ebs-snapshot.md#architecture)
 - [S3 Files network-filesystem experiment](s3-files.md#architecture)
 - [Cargo freshness decision model](../concepts/cargo-freshness-model.md)

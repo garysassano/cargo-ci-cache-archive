@@ -4,6 +4,16 @@ GitHub Action for snapshotting directories on RunsOn self-hosted runners.
 
 This fork adds snapshot stream keys, path-scoped identity, fallback restore keys, smart save policies, and retention controls so matrix jobs can restore and save independent EBS snapshots safely.
 
+## Building
+
+This action runs Go through a thin Node launcher. The launcher (`index.js`, `post.js`) and the platform binaries (`main-linux-amd64`, `main-linux-arm64`) are generated build outputs and are not committed; they are listed in `.gitignore`. Regenerate them before running the action from a fresh checkout:
+
+```bash
+make build
+```
+
+`make build` produces both Linux binaries and the `index.js`/`post.js` launchers from `index.template.js`. The binary build uses `upx`; install it first (for example `apt-get install upx`, `apk add upx`, or `brew install upx`). Use `make js` to regenerate only the launchers and `make main-linux-amd64` / `make main-linux-arm64` for a single binary. Run `make build` again whenever the Go source under `internal/` or `main.go` changes.
+
 ## Usage
 
 ```yaml

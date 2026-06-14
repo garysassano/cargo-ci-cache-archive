@@ -1,0 +1,6 @@
+# Generated build artifacts for the snapshot action.
+# Regenerate with `make build` (see README "Building" section).
+/index.js
+/post.js
+/main-linux-amd64
+/main-linux-arm64

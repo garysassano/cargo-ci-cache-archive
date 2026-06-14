@@ -78,7 +78,7 @@ flowchart TD
 
 The cached worktree prevents unchanged source files from appearing newer than restored outputs. `Swatinem/rust-cache` independently restores Cargo home and a dependency-oriented target subset. Both are needed for this approach: stable source mtimes do not replace target fingerprints, and restored target state does not help if checkout rewrites every source mtime.
 
-For the selected RunsOn Magic Cache/S3 deployment, see the [RunsOn guide](../runs-on/README.md). This page keeps the approach itself provider-neutral.
+For the selected RunsOn Magic Cache/S3 deployment, see the [RunsOn guide](../deployments/runs-on/README.md). This page keeps the approach itself provider-neutral.
 
 ## Why It Works
 

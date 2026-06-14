@@ -8,9 +8,11 @@ Use the routing table below to load only the pages relevant to the task instead 
 
 | Task | Use |
 | --- | --- |
+| See current conclusions and their status | `docs/decisions/README.md` |
+| See superseded or revised conclusions | `docs/decisions/history.md` |
 | Understand documentation ownership | `docs/README.md` |
 | Choose or compare cache approaches | `docs/approaches/README.md` |
-| Apply the selected RunsOn Magic Cache design | `docs/runs-on/README.md` |
+| Apply the selected RunsOn Magic Cache deployment | `docs/deployments/runs-on/README.md` |
 | Configure fast CI tool setup | `docs/operations/mise-tool-setup.md` |
 | Explain Cargo freshness/no-op behavior | `docs/concepts/cargo-freshness-model.md` |
 | Map Cargo state paths to cache coverage | `docs/concepts/cargo-path-coverage.md` |
@@ -25,26 +27,19 @@ Use the routing table below to load only the pages relevant to the task instead 
 
 ## Current Conclusions
 
-Preserve these conclusions unless new evidence is added to `docs/evidence/`:
+The archive's conclusions are maintained canonically in `docs/decisions/README.md`, with superseded conclusions recorded in `docs/decisions/history.md`. Do not restate the conclusions here or in other pages; link to the decisions page and keep only brief summaries elsewhere.
 
-- Recommended default: `Swatinem/rust-cache` with an mtime-preserving cached worktree checkout.
-- Recommended setup layer on RunsOn: `mise-action` backed by Magic Cache for Rust, Zig, and helper tools.
-- Keep the selected RunsOn deployment canonical in `docs/runs-on/README.md`.
-- Proven workaround: split Cargo home and full target caching, with a source-keyed target cache restored after `rust-cache`.
-- EBS/filesystem snapshots provide the strongest local no-op fidelity, but with higher operational complexity.
-- S3 Files was rejected for Cargo target no-op state in these experiments because remote metadata/read behavior dominated even when Cargo was logically clean.
-- Do not mix full filesystem snapshots with `rust-cache` on the same `target/` or `$CARGO_HOME` paths.
-
-Treat these as archived conclusions, not timeless upstream facts. Before changing action versions, service behavior, or recommendations that depend on current external behavior, follow `docs/operations/maintenance-checklist.md` and verify the relevant upstream documentation.
+Treat the conclusions as archived, not as timeless upstream facts. Before changing any action version, service behavior, or recommendation that depends on current external behavior, follow `docs/operations/maintenance-checklist.md`, verify the relevant upstream documentation, and record the change in `docs/decisions/history.md`.
 
 ## Duplication Rules
 
+- Keep current conclusions in `docs/decisions/README.md` and superseded conclusions in `docs/decisions/history.md`; summarize and link instead of restating them.
 - Keep approach selection and tradeoffs in `docs/approaches/README.md`.
 - Keep test setup, observations, measurements, interpretation, and limitations in focused pages under `docs/evidence/`.
 - Do not maintain a chronological experiment log; move durable findings into the relevant concept, approach, operation, or evidence page.
 - Keep diagnostic procedures in `docs/operations/diagnosing-rebuilds.md`.
 - Keep `Swatinem/rust-cache` input and cleanup semantics in `docs/concepts/rust-cache-behavior.md`.
-- Keep RunsOn runner, Magic Cache, and S3 backend guidance in `docs/runs-on/README.md`.
+- Keep RunsOn runner, Magic Cache, and S3 backend guidance in `docs/deployments/runs-on/README.md`, and keep generic Cargo guidance out of it; the deployment links to the canonical approach, concept, and operation pages instead of copying their configuration.
 - Keep copyable workflow examples in `examples/workflows/`.
 - Link to canonical pages instead of repeating long tables or result summaries.
 
@@ -54,6 +49,7 @@ Treat these as archived conclusions, not timeless upstream facts. Before changin
 - Approach pages use this order where applicable: status summary, related files, design/architecture, operational details, strengths, limitations, evidence, decision.
 - Operation pages contain a purpose, recommended procedure or configuration, ordering, caveats, and references.
 - Evidence pages contain a question, test setup or progression, observations, interpretation, limitations, and implications.
+- Deployment pages contain an ownership statement, platform-specific deltas, the workflow shape, maintenance notes, and related-page links; they link to generic approach/concept/operation pages instead of restating configuration.
 - Category `README.md` files use a short ownership statement followed by a `Page | Purpose` table or a decision matrix.
 
 ## Markdown Style

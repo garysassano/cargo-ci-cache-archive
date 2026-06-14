@@ -2,6 +2,11 @@
 
 Use this checklist when refreshing the archive or copying its examples into a live repository.
 
+## Decisions
+
+- When a conclusion in [`docs/decisions/README.md`](../decisions/README.md) changes, append the prior conclusion to [`docs/decisions/history.md`](../decisions/history.md) before overwriting it, including what changed and the evidence or upstream change that prompted it.
+- After updating a decision, update the brief summaries that link to it: the root `README.md`, `AGENTS.md`, and any approach page status field.
+
 ## Example Versions
 
 - Check current GitHub-owned action majors for `actions/checkout`, `actions/cache`, `actions/upload-artifact`, and `actions/download-artifact`.
@@ -23,7 +28,7 @@ Use this checklist when refreshing the archive or copying its examples into a li
 
 ## Platform Guidance
 
-- Keep selected RunsOn Magic Cache guidance and its current-version checks in [`docs/runs-on/README.md`](../runs-on/README.md).
+- Keep selected RunsOn Magic Cache guidance and its current-version checks in [`docs/deployments/runs-on/README.md`](../deployments/runs-on/README.md).
 
 ## Archived AWS Experiments
 
