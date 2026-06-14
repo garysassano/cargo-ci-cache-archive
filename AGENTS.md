@@ -2,11 +2,7 @@
 
 This repository archives Rust/Cargo CI cache research, decisions, evidence, and copyable GitHub Actions examples. Optimize edits for accuracy, low duplication, and easy retrieval by other agents.
 
-## Agent Skill
-
-Use `.agents/skills/cargo-ci-cache/SKILL.md` for tasks that apply this archive to a Rust CI workflow, compare cache strategies, diagnose Cargo rebuilds, or modify the local snapshot and S3 Files action examples. The skill is repository-scoped and links back to canonical documents and examples.
-
-For simple repository maintenance, use the routing table below directly. Read only the pages relevant to the task instead of loading the entire archive.
+Use the routing table below to load only the pages relevant to the task instead of reading the entire archive.
 
 ## Canonical Entry Points
 

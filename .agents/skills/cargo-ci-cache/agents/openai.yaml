@@ -1,4 +1,0 @@
-interface:
-  display_name: "Cargo CI Cache"
-  short_description: "Choose and debug Cargo CI cache strategies"
-  default_prompt: "Use $cargo-ci-cache to review or improve this Rust CI cache workflow."
