@@ -1,0 +1,83 @@
+name: RunsOn Mise Rust Cache
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - app/**
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: runs-on=${{ github.run_id }}-cargo/cpu=16/image=ubuntu24-full-x64/extras=s3-cache
+
+    env:
+      LOCAL_WORKSPACE: /tmp/example-workspace
+      LOCAL_CARGO_TARGET_DIR: /tmp/example-cargo-target
+      MISE_DATA_DIR: ${{ github.workspace }}/.mise
+      RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
+
+    defaults:
+      run:
+        working-directory: /tmp/example-workspace/app
+
+    steps:
+      - name: Setup RunsOn Magic Cache
+        uses: runs-on/action@v2
+
+      - name: Checkout Workflow Actions
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            examples/actions/cached-worktree-checkout
+
+      - name: Restore Cached Worktree
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.LOCAL_WORKSPACE }}
+          key: workspace-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            workspace-${{ runner.os }}-${{ runner.arch }}-${{ github.ref_name }}-
+
+      - name: Checkout Cached Worktree
+        uses: ./examples/actions/cached-worktree-checkout
+        with:
+          path: ${{ env.LOCAL_WORKSPACE }}
+          sparse-paths: app
+
+      - name: Configure Cargo Target
+        run: mkdir -p "$LOCAL_CARGO_TARGET_DIR"
+
+      # Configure private Cargo registry credentials here when required.
+
+      - name: Setup Toolchain And Tools
+        uses: jdx/mise-action@v4
+        with:
+          cache: true
+          cache_key_prefix: mise-v1
+          mise_toml: |
+            [tools]
+            rust = "stable"
+            # Add only the tools this job uses:
+            # cargo-binstall = "latest"
+            # "cargo:cargo-lambda" = "latest"
+            # "cargo:trunk" = "latest"
+
+      - name: Cache Cargo Dependencies And Target
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ env.LOCAL_WORKSPACE }}/app -> ../../example-cargo-target
+          # Mise owns tools, so rust-cache does not retain unrelated tool crates or Cargo binaries.
+          cache-all-crates: false
+          cache-bin: false
+          # Cargo freshness needs target state, including matching workspace-library artifacts.
+          cache-targets: true
+          cache-workspace-crates: true
+          shared-key: app-release-v1
+
+      - name: Build
+        env:
+          CARGO_TARGET_DIR: ${{ env.LOCAL_CARGO_TARGET_DIR }}
+        run: cargo build --workspace --release --locked

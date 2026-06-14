@@ -8,6 +8,7 @@ For CI tool setup, prefer inline `mise_toml` with `jdx/mise-action`; see [Mise T
 
 | Example | Purpose | Referenced by |
 | --- | --- | --- |
+| [`runson-mise-rust-cache.yml`](workflows/runson-mise-rust-cache.yml) | Selected RunsOn combination: Magic Cache, mtime-preserving worktree, mise-owned tools, and explicitly scoped `rust-cache`. | [`docs/runs-on/README.md`](../docs/runs-on/README.md) |
 | [`rust-cache-mtime-checkout.yml`](workflows/rust-cache-mtime-checkout.yml) | Recommended default: `Swatinem/rust-cache` plus an mtime-preserving cached worktree checkout. | [`docs/approaches/rust-cache-mtime-checkout.md`](../docs/approaches/rust-cache-mtime-checkout.md) |
 | [`rust-cache-source-keyed-target-cache.yml`](workflows/rust-cache-source-keyed-target-cache.yml) | Proven workaround: `rust-cache` for Cargo home plus separate source-keyed target cache restored after `rust-cache`. | [`docs/approaches/rust-cache-source-keyed-target-cache.md`](../docs/approaches/rust-cache-source-keyed-target-cache.md) |
 | [`ebs-snapshot.yml`](workflows/ebs-snapshot.yml) | EBS/filesystem snapshot layout for high-fidelity Cargo no-op behavior. | [`docs/approaches/ebs-snapshot.md`](../docs/approaches/ebs-snapshot.md) |

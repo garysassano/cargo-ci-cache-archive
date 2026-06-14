@@ -106,7 +106,7 @@ The cached worktree checkout avoids that false invalidation:
 These settings control different parts of the action's restore and cleanup behavior. See [`Swatinem/rust-cache` Behavior](../concepts/rust-cache-behavior.md) for exact true/false behavior, workspace/path-dependency examples, cleanup details, and upstream source links.
 
 - `cache-targets: true` includes the configured target directory; this is the upstream default and is explicit here because target state is part of the approach.
-- `cache-workspace-crates: true` retains matching target artifacts for Cargo workspace members, including normal in-tree path crates.
+- `cache-workspace-crates: true` retains matching target artifacts for Cargo workspace members, including libraries declared as workspace members.
 - Leave `cache-all-crates` at its `false` default unless another step downloads registry crates outside the current dependency graph, such as a tool built through `cargo install` or an install action's source-build fallback.
 - Keep the `cache-bin: true` default when another step installs Cargo-registered binaries. Set it to `false` when the workflow has none.
 

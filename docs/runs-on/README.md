@@ -27,6 +27,20 @@ stable explicit CARGO_TARGET_DIR for the build
 
 Do not add an EBS filesystem snapshot to this design. It is a separate archived approach with different restore and lifecycle semantics.
 
+## Cache Ownership
+
+Each layer owns a different kind of state:
+
+| State | Owner | Why |
+| --- | --- | --- |
+| Source worktree and unchanged source mtimes | `actions/cache` plus the cached-worktree checkout | Prevents normal checkout from making unchanged source files appear newer than restored Cargo outputs. |
+| Rust toolchain, rustup targets, Zig, and Cargo-distributed helper tools | `jdx/mise-action` | Mise installs and caches tools under `MISE_DATA_DIR`; these are setup state, not Cargo freshness state. |
+| Cargo registry and Git dependency state | `Swatinem/rust-cache` | Keeps dependency downloads and sources aligned with the workspace dependency graph. |
+| Dependency and workspace-library target state | `Swatinem/rust-cache` | Restores the target metadata and artifacts used by Cargo's freshness checks, subject to `rust-cache` cleanup. |
+| Final build output location | Explicit stable `CARGO_TARGET_DIR` | Keeps restored target paths consistent between jobs. |
+
+Keep these ownership boundaries strict. In particular, declare stable helper tools in mise instead of installing them separately with `cargo install`, and do not place `CARGO_HOME` under `MISE_DATA_DIR`.
+
 ## Backend Boundary
 
 ```mermaid
@@ -98,47 +112,79 @@ sequenceDiagram
     Magic->>S3: Write worktree archive
 ```
 
-## `rust-cache` Inputs
+## Recommended Default Configuration
 
-RunsOn does not require different `rust-cache` inputs. [Magic Cache](https://runs-on.com/caching/magic-cache/) transparently replaces the `actions/cache` storage backend, while `rust-cache` retains the same path selection, keying, cleanup, and save behavior used with GitHub's hosted cache service.
+RunsOn does not require different `rust-cache` inputs. [Magic Cache](https://runs-on.com/docs/performance/caching/actions/) transparently replaces the `actions/cache` storage backend, while mise and `rust-cache` retain their normal path selection, keying, cleanup, and save behavior.
 
-Use the same approach-defining inputs as the generic mtime-preserving checkout:
+For the selected combination, use this baseline:
 
 ```yaml
-- uses: Swatinem/rust-cache@v2
-  with:
-    workspaces: ./app -> ../../target-for-job
-    cache-targets: true
-    cache-workspace-crates: true
-    shared-key: app-target-v1
+env:
+  MISE_DATA_DIR: ${{ github.workspace }}/.mise
+  RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
+
+steps:
+  - name: Setup Toolchain And Tools
+    uses: jdx/mise-action@v4
+    with:
+      cache: true
+      cache_key_prefix: mise-v1
+      mise_toml: |
+        [tools]
+        rust = "stable"
+        # Declare any job tools here instead of running cargo install separately.
+        # cargo-binstall = "latest"
+        # "cargo:cargo-lambda" = "latest"
+        # "cargo:trunk" = "latest"
+
+  - name: Cache Cargo Dependencies And Target
+    uses: Swatinem/rust-cache@v2
+    with:
+      workspaces: /tmp/example-workspace/app -> ../../example-cargo-target
+      cache-all-crates: false
+      cache-bin: false
+      cache-targets: true
+      cache-workspace-crates: true
+      shared-key: app-release-v1
 ```
 
-- `cache-targets: true`: include the configured target directory.
-- `cache-workspace-crates: true`: retain matching workspace library artifacts through target cleanup.
+### Why These Mise Values
 
-Choose `cache-all-crates` and `cache-bin` from the complete workflow, not from the cache backend:
+| Setting | Selected value | Reason in this combination |
+| --- | --- | --- |
+| `MISE_DATA_DIR` | Stable job-local path | `mise-action` caches this directory through the `actions/cache` API, which Magic Cache redirects to the RunsOn S3 backend. |
+| `RUSTUP_HOME` | Directory under `MISE_DATA_DIR` | Mise manages Rust through rustup; placing rustup state under the mise cache preserves the toolchain, components, and targets with the other tools. |
+| `cache` | `true` | Enables mise's built-in cache restore/save instead of adding another custom cache step. |
+| `cache_key_prefix` | `mise-v1` | Gives the tool cache an explicit manual namespace. Bump it when the mise cache layout or setup policy changes. |
+| `mise_toml` | Inline job-specific tool list | Keeps each job's required toolchain and helper tools explicit. The generated configuration contributes to mise's cache key. |
 
-- Keep the `cache-all-crates: false` default unless another step needs registry crates outside the workspace dependency graph.
-- Keep the `cache-bin: true` default when another step installs Cargo-registered binaries. Set it to `false` when the workflow has none.
-- Tools managed by mise do not require broader `rust-cache` registry or binary caching; mise owns their installation cache.
+Do not set `CARGO_HOME` or `MISE_CARGO_HOME` under `MISE_DATA_DIR`. Cargo home can contain private registry credentials and is already owned and cleaned by `rust-cache`.
 
-See [`rust-cache` behavior](../concepts/rust-cache-behavior.md) for exact input semantics and cleanup rules.
+### Why These `rust-cache` Values
+
+| Input | Selected value | Reason in this combination |
+| --- | --- | --- |
+| `cache-all-crates` | `false` | Keep Cargo registry state focused on the application dependency graph. Mise owns tool installation, so `rust-cache` does not need to retain unrelated registry crates downloaded while installing tools. |
+| `cache-bin` | `false` | Mise owns helper executables under `MISE_DATA_DIR`. Excluding `$CARGO_HOME/bin` avoids overlapping tool caches and avoids relying on `rust-cache` binary cleanup semantics. |
+| `cache-targets` | `true` | The selected Cargo approach needs target artifacts, dep-info, fingerprints, and build-script state in addition to stable source mtimes. This is explicit even though it is the upstream default. |
+| `cache-workspace-crates` | `true` | Preserve matching target artifacts for Cargo workspace members, including libraries that are workspace members, instead of retaining dependencies only. |
+
+`shared-key` should identify the job's build shape, such as application, target triple, and profile. Bump its namespace after changing cache semantics that the automatic Rust environment hash does not represent clearly.
+
+This baseline assumes every stable helper tool is managed by mise. If a workflow deliberately performs an additional `cargo install`, it no longer follows this ownership model; migrate that tool to mise where possible, or reconsider `cache-bin` and `cache-all-crates` using the [`rust-cache` behavior](../concepts/rust-cache-behavior.md) page.
+
+These settings still use dependency-oriented `rust-cache` target cleanup rather than a complete target snapshot. If measurable generated-code or build-script outliers persist, use the [source-keyed full-target workaround](../approaches/rust-cache-source-keyed-target-cache.md).
 
 ## Workflow Shape
 
-Enable RunsOn Magic Cache and initialize RunsOn before using `actions/cache`, `jdx/mise-action`, or `Swatinem/rust-cache`:
+Use the complete [RunsOn, mise, and `rust-cache` workflow](../../examples/workflows/runson-mise-rust-cache.yml). Its required order is:
 
-```yaml
-jobs:
-  build:
-    runs-on: runs-on=${{ github.run_id }}-cargo/cpu=16/image=ubuntu24-full-x64/extras=s3-cache
-
-    steps:
-      - name: Setup RunsOn Magic Cache
-        uses: runs-on/action@v2
-```
-
-Then follow the generic [mtime-preserving checkout workflow](../../examples/workflows/rust-cache-mtime-checkout.yml), adding `mise-action` after checkout and registry credential setup but before `rust-cache`. Keep the example's stable worktree, target paths, and `rust-cache` inputs. RunsOn adds no backend-specific `rust-cache` input.
+1. Enable `extras=s3-cache` and run `runs-on/action@v2`.
+2. Restore and update the cached worktree.
+3. Configure registry credentials when required.
+4. Run `mise-action` so the build toolchain and helper tools are active.
+5. Restore `rust-cache` using the explicit ownership settings above.
+6. Build with a stable explicit `CARGO_TARGET_DIR`.
 
 ## Tool Setup
 

@@ -19,7 +19,7 @@ Use inline `mise_toml` in the workflow when the tool set is CI-specific:
   uses: jdx/mise-action@v4
   with:
     cache: true
-    cache_key_prefix: mise-v4
+    cache_key_prefix: mise-v1
     mise_toml: |
       [tools]
       zig = "0.16.0"
@@ -35,7 +35,7 @@ For a Trunk/WebAssembly job:
   uses: jdx/mise-action@v4
   with:
     cache: true
-    cache_key_prefix: mise-v4
+    cache_key_prefix: mise-v1
     mise_toml: |
       [tools]
       rust = { version = "stable", components = "rustfmt", targets = "wasm32-unknown-unknown" }
@@ -51,6 +51,8 @@ Prefer the mise Cargo backend for Cargo-distributed tools over the GitHub releas
 No explicit `depends` option is needed in these examples. The Cargo backend declares Rust as a required dependency and `cargo-binstall` as an optional dependency. When `rust`, `cargo-binstall`, and `cargo:*` tools are present in the same install set, mise orders them so the Cargo tools wait for Rust and `cargo-binstall`. Mise then uses `cargo-binstall` by default when it is available, avoiding source compilation when a compatible prebuilt binary exists.
 
 Use an explicit `depends` option only for an additional project-specific ordering constraint that the backend does not already declare.
+
+`cache_key_prefix: mise-v1` is an explicit cache-layout namespace, not the action major. Increment it when changing the mise cache layout or setup policy in a way that should start a fresh tool cache.
 
 ## Environment Variables
 
