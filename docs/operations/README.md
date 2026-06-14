@@ -1,6 +1,8 @@
 # Operations
 
-Operational procedures for investigating and maintaining Cargo CI caches.
+This category owns procedures, configuration guidance, diagnosis, and maintenance for Cargo CI caching.
+
+## Pages
 
 | Page | Purpose |
 | --- | --- |

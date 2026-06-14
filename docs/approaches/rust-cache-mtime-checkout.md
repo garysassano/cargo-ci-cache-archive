@@ -1,6 +1,12 @@
 # `Swatinem/rust-cache` With Mtime-Preserving Checkout
 
-This is the recommended default approach.
+## Summary
+
+| Field | Value |
+| --- | --- |
+| Status | Recommended Cargo cache default |
+| Use when | You want maintained, simple CI with strong repeated-run performance. |
+| Main tradeoff | Some generated-code and build-script chains can still rebuild on exact target-cache hits. |
 
 ## Related Files
 
@@ -177,11 +183,11 @@ This directly addresses source files receiving new mtimes during checkout, but i
 
 Follow the official [tracking issue `cargo#14136`](https://github.com/rust-lang/cargo/issues/14136) for stabilization and build-script coverage. The original implementation is [`cargo#14137`](https://github.com/rust-lang/cargo/pull/14137).
 
-## Observed Result
+## Evidence
 
-Repeated same-SHA workflows with this approach produced most matrix jobs around 33 to 37 seconds. A few jobs with generated-code/build-script dependency chains were slower, around 50 to 65 seconds.
+The [cached worktree and source-keyed target-cache evidence](../evidence/cached-worktree-and-target-cache.md) records the normal-checkout failure, the improvement from stable source mtimes, the remaining generated-code/build-script outliers, and the measured workaround results.
 
-## When To Use
+## Decision
 
 Use this as the default for most Rust GitHub Actions CI workflows where:
 

@@ -1,6 +1,8 @@
 # Concepts
 
-These pages explain Cargo's build-state model and the cache primitives used by the approaches in this archive.
+This category owns stable explanations of Cargo's build-state model and the cache primitives used by the approaches in this archive.
+
+## Pages
 
 | Page | Purpose |
 | --- | --- |

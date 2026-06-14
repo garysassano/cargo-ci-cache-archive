@@ -1,8 +1,12 @@
-# Empirical Results
+# `rust-cache` Vs EBS Snapshot Evidence
 
-This page preserves the empirical comparison between `Swatinem/rust-cache` and EBS snapshot-style filesystem restore.
+This page records the empirical comparison between `Swatinem/rust-cache` and EBS snapshot-style filesystem restore.
 
-## Test Design
+## Question
+
+How much reusable Cargo state does each method restore, and does Cargo perform any compilation on the next identical build?
+
+## Test Setup
 
 The comparison workflow ran the same generic Cargo command in two jobs:
 
@@ -33,7 +37,7 @@ incremental files
 registry source files
 ```
 
-## Build Log Results
+## Observations
 
 ### Seed Run
 
@@ -53,7 +57,7 @@ The second run measured reuse.
 | Reuse | `Swatinem/rust-cache` + Magic Cache | 30 | 593 | 72 |
 | Reuse | EBS snapshot | 0 | 623 | 0 |
 
-## State Before Second Build
+### State Before Second Build
 
 | State before second build | `Swatinem/rust-cache` + Magic Cache | EBS snapshot |
 | --- | ---: | ---: |
@@ -66,7 +70,7 @@ The second run measured reuse.
 | Incremental files | 0 | 0 |
 | Registry source files | 5343 | 38230 |
 
-## State After Second Build
+### State After Second Build
 
 The `Swatinem/rust-cache` job recreated additional state during the second build:
 
@@ -80,7 +84,7 @@ The `Swatinem/rust-cache` job recreated additional state during the second build
 
 The EBS snapshot job already had the complete state before the second build and did not need to grow these counts during build.
 
-## Observed Magic Cache Object Shape
+### Magic Cache Object Shape
 
 A read-only object listing of the RunsOn cache bucket showed that Magic Cache stores `actions/cache` entries as keyed objects shaped like:
 
@@ -117,8 +121,14 @@ The EBS snapshot job restored the complete post-build filesystem state from the 
 0 fingerprint / dirty indicators
 ```
 
-## Important Caveat
+## Limitations
 
 In this empirical workflow, `CARGO_INCREMENTAL=0` was present. `Swatinem/rust-cache` explicitly exports `CARGO_INCREMENTAL=0`, and Rust setup actions may also set it when unset. Therefore this run compares Cargo freshness metadata reuse, not rustc incremental reuse.
 
 If incremental compilation is enabled and `target/**/incremental` is under the snapshot root, filesystem snapshots can preserve it. `Swatinem/rust-cache` intentionally disables and cleans incremental state.
+
+## Implications
+
+- Use this evidence to understand why a complete filesystem restore can produce a stricter Cargo no-op than dependency-oriented archive cleanup.
+- Do not treat the snapshot result as the selected deployment recommendation; operational tradeoffs remain documented in the [approach comparison](../approaches/README.md).
+- See the [`rust-cache` approach](../approaches/rust-cache-mtime-checkout.md) and [EBS snapshot approach](../approaches/ebs-snapshot.md) for implementation guidance.

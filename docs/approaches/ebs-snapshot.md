@@ -1,6 +1,12 @@
 # EBS Snapshot / Filesystem Snapshot
 
-EBS snapshot-style filesystem restore is the strongest approach for reproducing local Cargo no-op behavior, but it is operationally heavier than archive caches.
+## Summary
+
+| Field | Value |
+| --- | --- |
+| Status | Archived alternative |
+| Use when | Maximum local no-op fidelity matters more than infrastructure and lifecycle complexity. |
+| Main tradeoff | Credential scrubbing, snapshot scope, storage lifecycle, and matrix growth require active ownership. |
 
 ## Related Files
 
@@ -95,15 +101,18 @@ The local snapshot fork added key-based snapshot streams, path-scoped identity, 
 
 - Closest to local developer-machine Cargo state reuse.
 - Preserves source tree, mtimes, target artifacts, dep-info, fingerprints, build-script outputs, registry sources, and helper caches.
-- Empirical comparison showed 0 `Compiling` lines and 0 fingerprint/dirty indicators on reuse for a generic workspace build.
 
-## Weaknesses
+## Limitations
 
 - More infrastructure and lifecycle overhead.
 - Needs careful credential scrubbing if Cargo home/config is inside the snapshot.
 - Toolchain/compiler/tool caches can bloat snapshots if not placed deliberately.
 - Matrix jobs can create many large snapshots if not scoped carefully.
 
-## Observed Result
+## Evidence
 
-In the empirical comparison, a snapshot restore had 0 `Compiling` lines and 623 `Fresh` lines on reuse.
+The [`rust-cache` vs EBS snapshot evidence](../evidence/rust-cache-vs-snapshot.md) records the seed/reuse comparison, restored state counts, Cargo log results, interpretation, and incremental-compilation caveat.
+
+## Decision
+
+Keep this as an archived alternative for workloads where maximum local no-op fidelity justifies infrastructure, lifecycle, and credential-management complexity. Do not combine it with `rust-cache` on the same Cargo home or target paths.

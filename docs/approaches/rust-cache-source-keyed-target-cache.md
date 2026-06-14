@@ -1,6 +1,12 @@
 # `Swatinem/rust-cache` Plus Source-Keyed Target Cache
 
-This is a proven workaround for true Cargo no-op behavior across all tested matrix jobs. It is not the recommended default unless the extra workflow complexity is justified.
+## Summary
+
+| Field | Value |
+| --- | --- |
+| Status | Proven workaround |
+| Use when | Repeated workspace rebuild outliers are expensive enough to justify custom cache composition. |
+| Main tradeoff | More workflow logic, broader invalidation, and strict restore ordering. |
 
 ## Related Files
 
@@ -125,25 +131,27 @@ Use `--locked` for CI artifact builds. It ensures `Cargo.lock` is up to date and
 
 Do not assume `--frozen` or `--offline` will work with `rust-cache`. Those modes require complete local registry/index state. `rust-cache` intentionally prunes Cargo home to keep archives small, which can make offline registry operations fail even when normal cached builds are fast and correct.
 
-## Verified Results
+## Strengths
 
-Previously slow generated-code/build-script dependency chains became no-op:
+- Produces true Cargo no-op behavior for the tested generated-code and build-script outliers.
+- Keys complete target state by source and build semantics.
+- Keeps Cargo-home dependency caching under maintained `rust-cache` behavior.
 
-| Job type | Target cache | Cargo result |
-| --- | --- | --- |
-| Message API style job | source-keyed target cache hit | `Finished ... in 0.26s`, no `Compiling` lines. |
-| Provider API style job | source-keyed target cache hit | `Finished ... in 0.24s`, no `Compiling` lines. |
-| Provider callback style job | source-keyed target cache hit | `Finished ... in 0.31s`, no `Compiling` lines. |
-
-A native `target-key` prototype in a local `rust-cache` fork was also tested against the same workload. It removed the separate `actions/cache` target step by making `rust-cache` split Cargo home and target caches internally. After one seed run, repeated runs restored exact Cargo and target cache hits across all tested binary and UI jobs. Cargo produced no `Compiling` lines; remaining build phases were around 0.3 seconds.
-
-This validates the native action design, but the archive should keep the current copyable workaround until upstream `Swatinem/rust-cache` releases equivalent support.
-
-## Why It Is Not The Default
+## Limitations
 
 The workaround adds custom cache composition and ordering constraints. It is correct and proven, but it is more workflow logic to own.
 
-Use it if:
+- Any tracked source change under the selected tree invalidates the per-job target key.
+- Restore ordering is mandatory.
+- The current copyable implementation needs a second cache action.
+
+## Evidence
+
+The [cached worktree and source-keyed target-cache evidence](../evidence/cached-worktree-and-target-cache.md) records the exact-hit cycle, ordering tests, measured no-op results, native `target-key` prototype, and key-namespace lesson.
+
+## Decision
+
+Use this workaround if:
 
 - Generated-code/build-script rebuilds are too expensive.
 - A fork/adapter is warranted because upstream does not support the use case.

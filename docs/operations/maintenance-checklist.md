@@ -32,8 +32,9 @@ Use this checklist when refreshing the archive or copying its examples into a li
 - Keep credential scrubbing guidance on any snapshot layout that places `$CARGO_HOME` under the snapshot root.
 - Keep snapshot and S3 Files local action examples generic; do not reintroduce app-specific names, secrets, or runner labels.
 
-## Results Hygiene
+## Evidence Hygiene
 
-- Keep empirical numbers in `docs/results/empirical-results.md`, not duplicated across approach pages.
-- Keep chronological experiment history in `docs/results/experiment-log.md`.
+- Keep test setup, observations, measurements, interpretation, and limitations in focused pages under `docs/evidence/`.
+- Link approach pages to evidence instead of duplicating result tables and timings.
+- Do not maintain a chronological experiment diary; retain only findings that affect a current model, decision, procedure, or evidence record.
 - Keep diagnostic procedures in `docs/operations/diagnosing-rebuilds.md`.

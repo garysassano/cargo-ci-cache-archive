@@ -1,6 +1,12 @@
 # S3 Files For Cargo Target State
 
-S3 Files was tested as a shared filesystem for Cargo target and registry state. It was rejected for Cargo target no-op caching in these experiments.
+## Summary
+
+| Field | Value |
+| --- | --- |
+| Status | Rejected for Cargo target and registry no-op state |
+| Use when | Another workload needs a shared filesystem across ephemeral workers. |
+| Main tradeoff | Remote metadata and read behavior dominated the recorded Cargo no-op builds. |
 
 ## Related Files
 
@@ -67,61 +73,23 @@ References:
 - [AWS CLI `s3files` command reference](https://docs.aws.amazon.com/cli/latest/reference/s3files/)
 - [S3 Files announcement](https://aws.amazon.com/about-aws/whats-new/2026/04/amazon-s3-files/)
 
-## Tested Shapes
+## Strengths
 
-- Cargo target directory on S3 Files.
-- Cargo registry on S3 Files.
-- Cargo target and registry both on S3 Files.
-- S3 Files target with `Swatinem/rust-cache` handling Cargo registry/home.
-- Prewarming S3 Files paths before the Cargo build.
-- Copying registry state from S3 Files to local disk.
-- Raising S3 Files import thresholds to include larger Rust artifacts.
+- Presents a shared filesystem namespace to ephemeral workers.
+- Can preserve enough state for Cargo to determine that no units need compilation.
+- May remain useful for non-Cargo workloads that benefit from shared file access.
 
-## Important Cargo Observation
+## Limitations
 
-Cargo could be logically clean on S3 Files:
+- Cargo still traverses many small metadata and artifact files remotely.
+- Prewarming and priming can move cost without reducing total elapsed work.
+- Mount helper installation and mount setup add job overhead.
+- Import thresholds must account for large Rust artifacts.
 
-```text
-Compiling 0
-Downloaded 0
-Dirty 0
-fingerprint error 0
-```
+## Evidence
 
-This means Cargo's freshness proof could succeed. The remaining issue was often the cost of reading/traversing metadata and fingerprint state on S3 Files.
+The [S3 Files evidence record](../evidence/s3-files.md) contains the tested layouts, logical-freshness observation, measured timings, mount/setup costs, artifact-threshold finding, interpretation, and limitations.
 
-## Representative Results
-
-| Configuration | Observed result |
-| --- | --- |
-| Pure S3 Files registry + target | Forced no-op around 35 to 39 seconds. |
-| S3 Files prewarm | Moved work earlier; did not remove total cost. Example prewarm around 41 seconds followed by lower Cargo time. |
-| Copy registry from S3 Files to local disk | Not viable; one copy path took about 932 seconds. |
-| `rust-cache` registry + S3 Files target | Cargo improved to around 8 to 14 seconds in some runs, but still did not beat local target cache behavior. |
-| Target-directory priming after mount | Helped the Cargo step but mostly moved cost into the prime step. |
-
-## Large Artifact Threshold Finding
-
-The S3 Files import threshold needed to include large Rust artifacts. A 10 MiB threshold was too low.
-
-Examples of large local target files:
-
-```text
-large SDK rlib                  84.00 MiB
-large events rlib               48.16 MiB
-Lambda bootstrap                14.13 MiB
-```
-
-The test sync config was raised to 1 GiB for relevant target paths.
-
-## Mount/Setup Cost
-
-The S3 Files mount path had non-trivial setup cost in the runner image used during testing:
-
-- Total mount step was around 8 seconds.
-- Actual `mount` plus `findmnt` was around 1.5 seconds.
-- Installing/upgrading cached S3 Files helper packages cost about 5 to 6 seconds.
-
-## Final Decision
+## Decision
 
 Do not use S3 Files for Cargo target or registry state in this workflow. It may still be useful for other shared filesystem workloads.

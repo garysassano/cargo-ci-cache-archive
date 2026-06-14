@@ -1,6 +1,6 @@
 # Agent Instructions
 
-This repository archives Rust/Cargo CI cache research, decisions, results, and copyable GitHub Actions examples. Optimize edits for accuracy, low duplication, and easy retrieval by other agents.
+This repository archives Rust/Cargo CI cache research, decisions, evidence, and copyable GitHub Actions examples. Optimize edits for accuracy, low duplication, and easy retrieval by other agents.
 
 ## Agent Skill
 
@@ -12,6 +12,7 @@ For simple repository maintenance, use the routing table below directly. Read on
 
 | Task | Use |
 | --- | --- |
+| Understand documentation ownership | `docs/README.md` |
 | Choose or compare cache approaches | `docs/approaches/README.md` |
 | Apply the selected RunsOn Magic Cache design | `docs/runs-on/README.md` |
 | Configure fast CI tool setup | `docs/operations/mise-tool-setup.md` |
@@ -20,8 +21,7 @@ For simple repository maintenance, use the routing table below directly. Read on
 | Explain cache primitives | `docs/concepts/cache-primitives.md` |
 | Explain `Swatinem/rust-cache` inputs and cleanup | `docs/concepts/rust-cache-behavior.md` |
 | Diagnose rebuilds | `docs/operations/diagnosing-rebuilds.md` |
-| Review measured evidence | `docs/results/empirical-results.md` |
-| Review experiment chronology | `docs/results/experiment-log.md` |
+| Review measured evidence | `docs/evidence/README.md` |
 | Refresh examples and assumptions | `docs/operations/maintenance-checklist.md` |
 | Copy workflow shapes | `examples/README.md` and `examples/workflows/` |
 | Understand the local snapshot fork | `examples/actions/snapshot/README.md` |
@@ -29,7 +29,7 @@ For simple repository maintenance, use the routing table below directly. Read on
 
 ## Current Conclusions
 
-Preserve these conclusions unless new evidence is added to `docs/results/`:
+Preserve these conclusions unless new evidence is added to `docs/evidence/`:
 
 - Recommended default: `Swatinem/rust-cache` plus an mtime-preserving cached worktree checkout.
 - Recommended setup layer on RunsOn: `mise-action` backed by Magic Cache for Rust, Zig, and helper tools.
@@ -44,13 +44,21 @@ Treat these as archived conclusions, not timeless upstream facts. Before changin
 ## Duplication Rules
 
 - Keep approach selection and tradeoffs in `docs/approaches/README.md`.
-- Keep empirical numbers in `docs/results/empirical-results.md`.
-- Keep chronological experiment history in `docs/results/experiment-log.md`.
+- Keep test setup, observations, measurements, interpretation, and limitations in focused pages under `docs/evidence/`.
+- Do not maintain a chronological experiment log; move durable findings into the relevant concept, approach, operation, or evidence page.
 - Keep diagnostic procedures in `docs/operations/diagnosing-rebuilds.md`.
 - Keep `Swatinem/rust-cache` input and cleanup semantics in `docs/concepts/rust-cache-behavior.md`.
 - Keep RunsOn runner, Magic Cache, and S3 backend guidance in `docs/runs-on/README.md`.
 - Keep copyable workflow examples in `examples/workflows/`.
 - Link to canonical pages instead of repeating long tables or result summaries.
+
+## Page Conventions
+
+- Concept pages explain stable models and semantics, followed by caveats and official references where applicable.
+- Approach pages use this order where applicable: status summary, related files, design/architecture, operational details, strengths, limitations, evidence, decision.
+- Operation pages contain a purpose, recommended procedure or configuration, ordering, caveats, and references.
+- Evidence pages contain a question, test setup or progression, observations, interpretation, limitations, and implications.
+- Category `README.md` files use a short ownership statement followed by a `Page | Purpose` table or a decision matrix.
 
 ## Markdown Style
 

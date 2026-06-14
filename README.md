@@ -11,7 +11,7 @@ It covers:
 - How EBS snapshot-style filesystem restore compares with archive caches.
 - Why S3 Files was not a good fit for Cargo target no-op state in these tests.
 - A proven but not currently selected workaround using a source-keyed target cache.
-- How `mise-action` can make toolchain and tool installation effectively free on RunsOn Magic Cache.
+- How `mise-action` can make repeated toolchain and tool setup very fast on RunsOn Magic Cache.
 
 ## Current Recommendation
 
@@ -23,12 +23,13 @@ This is the pragmatic default because it makes repeated setup of Zig, Rust targe
 
 | Goal | Entry point |
 | --- | --- |
+| Understand the documentation organization | [Documentation Map](docs/README.md) |
 | Choose or compare cache approaches | [Approach Comparison](docs/approaches/README.md) |
 | Deploy the recommended approach on RunsOn | [RunsOn Magic Cache](docs/runs-on/README.md) |
 | Configure fast CI tool setup | [Mise Tool Setup](docs/operations/mise-tool-setup.md) |
 | Understand why Cargo rebuilds | [Cargo Freshness Model](docs/concepts/cargo-freshness-model.md) |
 | Check which paths each approach preserves | [Cargo Path Coverage](docs/concepts/cargo-path-coverage.md) |
-| Review measurements and experiment history | [Empirical Results](docs/results/empirical-results.md), [Experiment Log](docs/results/experiment-log.md) |
+| Review measured evidence | [Evidence](docs/evidence/README.md) |
 | Diagnose a cached build that still recompiles | [Diagnosing Rebuilds](docs/operations/diagnosing-rebuilds.md) |
 | Copy or adapt workflow examples | [Examples](examples/README.md) |
 | Refresh this archive later | [Maintenance Checklist](docs/operations/maintenance-checklist.md) |

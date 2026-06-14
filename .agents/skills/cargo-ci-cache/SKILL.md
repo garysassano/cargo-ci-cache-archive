@@ -15,6 +15,7 @@ Read only the references needed for the task:
 
 | Task | Read |
 | --- | --- |
+| Understand documentation ownership | [Documentation map](../../../docs/README.md) |
 | Choose or compare approaches | [Approach comparison](../../../docs/approaches/README.md) |
 | Apply the RunsOn Magic Cache design | [RunsOn guide](../../../docs/runs-on/README.md) |
 | Configure fast CI tool setup | [Mise tool setup](../../../docs/operations/mise-tool-setup.md) |
@@ -22,8 +23,7 @@ Read only the references needed for the task:
 | Map state paths to cache coverage | [Cargo path coverage](../../../docs/concepts/cargo-path-coverage.md) |
 | Explain `Swatinem/rust-cache` inputs or cleanup | [`rust-cache` behavior](../../../docs/concepts/rust-cache-behavior.md) |
 | Diagnose rebuilds | [Diagnosing rebuilds](../../../docs/operations/diagnosing-rebuilds.md) |
-| Review measured evidence | [Empirical results](../../../docs/results/empirical-results.md) |
-| Review experiment chronology | [Experiment log](../../../docs/results/experiment-log.md) |
+| Review measured evidence | [Evidence index](../../../docs/evidence/README.md) |
 | Copy workflow or action shapes | [Examples](../../../examples/README.md) |
 | Work on the snapshot fork | [Snapshot action contract](../../../examples/actions/snapshot/README.md) |
 | Work on S3 Files mounting | [S3 Files approach](../../../docs/approaches/s3-files.md) |
@@ -125,8 +125,8 @@ Use the [S3 Files experiment record](../../../docs/approaches/s3-files.md) and [
 When editing this repository:
 
 - Keep conclusions in [the approach comparison](../../../docs/approaches/README.md).
-- Keep empirical numbers in [empirical results](../../../docs/results/empirical-results.md).
-- Keep chronological history in [the experiment log](../../../docs/results/experiment-log.md).
+- Keep test setup, measurements, and interpretation in focused pages under [`docs/evidence/`](../../../docs/evidence/README.md).
+- Do not maintain a chronological experiment log; route durable findings to the relevant canonical page.
 - Keep procedures in [`docs/operations/`](../../../docs/operations/README.md).
 - Keep RunsOn-specific deployment guidance in [`docs/runs-on/`](../../../docs/runs-on/README.md).
 - Keep examples generic under [`examples/`](../../../examples/README.md).

@@ -1,6 +1,6 @@
 # Approaches
 
-This is the canonical comparison of the cache approaches preserved in this archive. Individual pages keep implementation details and examples.
+This category owns architecture choices, tradeoffs, status, and decisions. Individual pages keep implementation details and link to focused evidence records for measured results.
 
 ## Decision Matrix
 

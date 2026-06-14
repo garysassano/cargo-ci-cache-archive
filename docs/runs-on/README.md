@@ -11,7 +11,7 @@ This page owns the selected RunsOn deployment:
 - The combined worktree, mise, and `rust-cache` workflow shape.
 - RunsOn-specific configuration and maintenance assumptions.
 
-Other pages should link here instead of repeating that guidance. Empirical measurements remain under `docs/results/`, and archived snapshot or S3 Files implementations remain with their approach and action documentation.
+Other pages should link here instead of repeating that guidance. Measurements remain under `docs/evidence/`, and archived snapshot or S3 Files implementations remain with their approach and action documentation.
 
 ## Selected Architecture
 
@@ -152,10 +152,10 @@ See [Mise Tool Setup](../operations/mise-tool-setup.md) for the copyable configu
 
 Before changing this platform shape, verify the current RunsOn runner-label syntax, Magic Cache setup, S3 backend behavior, and `runs-on/action` major. Keep those platform-specific assumptions on this page rather than copying them into generic Cargo approach pages.
 
-## Related Evidence
+## Related Pages
 
 - [Recommended cache approach](../approaches/rust-cache-mtime-checkout.md)
 - [Mise tool setup](../operations/mise-tool-setup.md)
 - [Cache primitive boundaries](../concepts/cache-primitives.md)
-- [Empirical results](../results/empirical-results.md)
-- [Observed RunsOn cache object shape](../results/empirical-results.md#observed-magic-cache-object-shape)
+- [`rust-cache` vs EBS snapshot evidence](../evidence/rust-cache-vs-snapshot.md)
+- [Observed RunsOn cache object shape](../evidence/rust-cache-vs-snapshot.md#magic-cache-object-shape)
