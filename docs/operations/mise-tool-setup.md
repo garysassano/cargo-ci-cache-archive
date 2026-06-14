@@ -2,7 +2,7 @@
 
 Use `mise-action` as the preferred CI setup layer for Rust-adjacent tools and runtimes, especially on RunsOn runners with Magic Cache enabled.
 
-This is not a Cargo cache approach. It is setup guidance that applies before the selected Cargo cache approach, such as `Swatinem/rust-cache` plus an mtime-preserving checkout or a source-keyed target cache. Let Cargo caches handle Cargo home and target freshness; let mise handle repeated tool installation.
+This is not a Cargo cache approach. It is setup guidance that applies before the selected Cargo cache approach, such as `Swatinem/rust-cache` with an mtime-preserving checkout or a source-keyed target cache. Let Cargo caches handle Cargo home and target freshness; let mise handle repeated tool installation.
 
 ## Why
 
@@ -112,7 +112,7 @@ The first run after a namespace bump should seed the new target cache. The immed
 
 Mise setup caching makes tool installation fast. It does not by itself prove Cargo units fresh. Cargo no-op behavior still depends on source mtimes, target fingerprints, dep-info files, build-script outputs, registry source paths, and consistent build semantics.
 
-Keep using the selected Cargo cache approach, such as `Swatinem/rust-cache` plus mtime-preserving checkout, and use source-keyed target caches when workspace rebuild outliers justify them.
+Keep using the selected Cargo cache approach, such as `Swatinem/rust-cache` with mtime-preserving checkout, and use source-keyed target caches when workspace rebuild outliers justify them.
 
 ## Official References
 

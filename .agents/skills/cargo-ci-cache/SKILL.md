@@ -43,14 +43,14 @@ When applying this skill to another repository:
 
 ## Core Decision
 
-Default to `mise-action` for tool setup plus `Swatinem/rust-cache` and an mtime-preserving cached worktree checkout for Cargo state. Use the [RunsOn guide](../../../docs/runs-on/README.md) when applying that decision on RunsOn.
+Default to `mise-action` for tool setup, with `Swatinem/rust-cache` and an mtime-preserving cached worktree checkout for Cargo state. Use the [RunsOn guide](../../../docs/runs-on/README.md) when applying that decision on RunsOn.
 
 Use alternatives only when the workload justifies them:
 
 | Need | Recommendation |
 | --- | --- |
 | Fast repeated setup for Rust/Zig/Cargo helper tools | `mise-action` with inline `mise_toml` and RunsOn Magic Cache |
-| Maintained, simple, fast repeated-run CI | `Swatinem/rust-cache` plus mtime-preserving checkout |
+| Maintained, simple, fast repeated-run CI | `Swatinem/rust-cache` with mtime-preserving checkout |
 | True no-op for repeated generated-code/build-script outliers | Source-keyed full target cache restored after `rust-cache` |
 | Maximum local no-op fidelity and acceptable infra overhead | Filesystem snapshot / EBS snapshot layout |
 | Shared filesystem for Cargo target no-op state | Do not use S3 Files based on these experiments |

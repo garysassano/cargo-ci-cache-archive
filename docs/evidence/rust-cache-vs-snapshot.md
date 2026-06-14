@@ -45,7 +45,7 @@ The first run seeded both methods.
 
 | Run | Method | `Compiling` lines | `Fresh` lines | Fingerprint / dirty indicators |
 | --- | ---: | ---: | ---: | ---: |
-| Seed | `Swatinem/rust-cache` + Magic Cache | 623 | 0 | 1584 |
+| Seed | `Swatinem/rust-cache` with Magic Cache | 623 | 0 | 1584 |
 | Seed | EBS snapshot | 623 | 0 | 1584 |
 
 ### Reuse Run
@@ -54,12 +54,12 @@ The second run measured reuse.
 
 | Run | Method | `Compiling` lines | `Fresh` lines | Fingerprint / dirty indicators |
 | --- | ---: | ---: | ---: | ---: |
-| Reuse | `Swatinem/rust-cache` + Magic Cache | 30 | 593 | 72 |
+| Reuse | `Swatinem/rust-cache` with Magic Cache | 30 | 593 | 72 |
 | Reuse | EBS snapshot | 0 | 623 | 0 |
 
 ### State Before Second Build
 
-| State before second build | `Swatinem/rust-cache` + Magic Cache | EBS snapshot |
+| State before second build | `Swatinem/rust-cache` with Magic Cache | EBS snapshot |
 | --- | ---: | ---: |
 | Exact cache hit | `true` | not applicable |
 | `CARGO_INCREMENTAL` | `0` | `0` in this workflow |

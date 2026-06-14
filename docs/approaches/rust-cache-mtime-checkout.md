@@ -12,7 +12,7 @@
 
 | File | Purpose |
 | --- | --- |
-| [Workflow example](../../examples/workflows/rust-cache-mtime-checkout.yml) | End-to-end cached worktree plus `Swatinem/rust-cache` workflow. |
+| [Workflow example](../../examples/workflows/rust-cache-mtime-checkout.yml) | End-to-end workflow using a cached worktree with `Swatinem/rust-cache`. |
 | [Cached worktree action](../../examples/actions/cached-worktree-checkout/action.yml) | Composite action that checks out into a restored worktree without rewriting unchanged file mtimes. |
 
 ## Design

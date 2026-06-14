@@ -1,4 +1,4 @@
-# `Swatinem/rust-cache` Plus Source-Keyed Target Cache
+# `Swatinem/rust-cache` With Source-Keyed Target Cache
 
 ## Summary
 

@@ -31,7 +31,7 @@ For simple repository maintenance, use the routing table below directly. Read on
 
 Preserve these conclusions unless new evidence is added to `docs/evidence/`:
 
-- Recommended default: `Swatinem/rust-cache` plus an mtime-preserving cached worktree checkout.
+- Recommended default: `Swatinem/rust-cache` with an mtime-preserving cached worktree checkout.
 - Recommended setup layer on RunsOn: `mise-action` backed by Magic Cache for Rust, Zig, and helper tools.
 - Keep the selected RunsOn deployment canonical in `docs/runs-on/README.md`.
 - Proven workaround: split Cargo home and full target caching, with a source-keyed target cache restored after `rust-cache`.
@@ -64,6 +64,7 @@ Treat these as archived conclusions, not timeless upstream facts. Before changin
 
 - Keep each normal prose paragraph on one source line and let the renderer wrap it to the available width.
 - Do not manually hard-wrap prose. Preserve structural line breaks in lists, tables, blockquotes, code fences, Mermaid diagrams, YAML, and front matter.
+- Use "with" when naming combinations of cache approaches. Avoid `w/`, `+`, and "plus" as alternate labels for the same relationship.
 
 ## Example Maintenance
 
