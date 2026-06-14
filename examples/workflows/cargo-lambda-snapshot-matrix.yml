@@ -1,4 +1,4 @@
-name: Cargo Lambda Matrix With Snapshot Build State
+name: Cargo Lambda Snapshot Matrix
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: Rust Cache With Source-Keyed Target Cache
+name: Rust Cache Source-Keyed Target Cache
 
 on:
   workflow_dispatch:

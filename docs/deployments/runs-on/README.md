@@ -120,7 +120,7 @@ Use the canonical configuration from the generic pages rather than a RunsOn-spec
 
 - The mise tool block, environment variables, and reasoning are in [mise tool setup](../../operations/mise-tool-setup.md).
 - The `rust-cache` input values and their reasoning are in [`rust-cache` behavior](../../concepts/rust-cache-behavior.md) and the [recommended approach](../../approaches/rust-cache-mtime-checkout.md).
-- The complete combined workflow is in [`runson-mise-rust-cache.yml`](../../../examples/workflows/runson-mise-rust-cache.yml).
+- The complete combined workflow is in [`runs-on-mise-rust-cache.yml`](../../../examples/workflows/runs-on-mise-rust-cache.yml).
 
 ### RunsOn-Specific Deltas
 
@@ -140,7 +140,7 @@ These settings still use dependency-oriented `rust-cache` target cleanup rather 
 
 ## Workflow Shape
 
-Use the complete [RunsOn, mise, and `rust-cache` workflow](../../../examples/workflows/runson-mise-rust-cache.yml). Its required order is:
+Use the complete [RunsOn, mise, and `rust-cache` workflow](../../../examples/workflows/runs-on-mise-rust-cache.yml). Its required order is:
 
 1. Enable `extras=s3-cache` and run `runs-on/action@v2`.
 2. Restore and update the cached worktree.

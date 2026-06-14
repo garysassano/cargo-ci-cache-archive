@@ -1,4 +1,4 @@
-name: Rust Cache With Cached Worktree Checkout
+name: Rust Cache Mtime Checkout
 
 on:
   workflow_dispatch:

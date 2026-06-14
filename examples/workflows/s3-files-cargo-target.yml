@@ -1,4 +1,4 @@
-name: S3 Files Cargo Target Experiment
+name: S3 Files Cargo Target
 
 on:
   workflow_dispatch:

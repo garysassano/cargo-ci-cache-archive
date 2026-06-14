@@ -1,4 +1,4 @@
-name: Cargo Build With EBS Snapshot Layout
+name: EBS Snapshot
 
 on:
   workflow_dispatch:
