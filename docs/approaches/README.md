@@ -6,8 +6,8 @@ This category owns architecture choices, tradeoffs, status, and decisions. Indiv
 
 | Approach | Status | Best when | Main tradeoff | Page | Example |
 | --- | --- | --- | --- | --- | --- |
-| `Swatinem/rust-cache` with mtime-preserving checkout | Recommended Cargo cache default | You want maintained/simple CI with strong repeated-run performance. | Some generated-code/build-script workspace chains can still rebuild on exact target-cache hits. | [rust-cache-mtime-checkout.md](rust-cache-mtime-checkout.md) | [workflow](../../examples/workflows/rust-cache-mtime-checkout.yml) |
-| `Swatinem/rust-cache` with source-keyed target cache | Proven workaround | Repeated workspace rebuild outliers are expensive enough to justify custom cache composition. | More workflow logic and strict restore ordering. | [rust-cache-source-keyed-target-cache.md](rust-cache-source-keyed-target-cache.md) | [workflow](../../examples/workflows/rust-cache-source-keyed-target-cache.yml) |
+| `Swatinem/rust-cache` with mtime-preserving checkout | Recommended Cargo cache default | You want maintained/simple CI that can produce warm Cargo no-op builds. | Affected local path workspace members can still rebuild on exact target-cache hits. | [rust-cache-mtime-checkout.md](rust-cache-mtime-checkout.md) | [workflow](../../examples/workflows/rust-cache-mtime-checkout.yml) |
+| `Swatinem/rust-cache` with source-keyed target cache | Proven workaround | Repeated local path workspace-member rebuilds are expensive enough to justify custom cache composition. | More workflow logic and strict restore ordering. | [rust-cache-source-keyed-target-cache.md](rust-cache-source-keyed-target-cache.md) | [workflow](../../examples/workflows/rust-cache-source-keyed-target-cache.yml) |
 | EBS snapshot / filesystem snapshot | Archived alternative | You need maximum local no-op fidelity and can own snapshot lifecycle complexity. | Heavier infrastructure, credential scrubbing, and snapshot scoping. | [ebs-snapshot.md](ebs-snapshot.md) | [workflow](../../examples/workflows/ebs-snapshot.yml) |
 | S3 Files | Rejected for Cargo target state | You need shared file-system access for another workload. | Cargo target metadata traversal was too slow/variable for these tests. | [s3-files.md](s3-files.md) | [workflow](../../examples/workflows/s3-files.yml) |
 
@@ -15,7 +15,7 @@ This category owns architecture choices, tradeoffs, status, and decisions. Indiv
 
 - Use `Swatinem/rust-cache` with the mtime-preserving cached worktree checkout as the starting point for Cargo state.
 - Use [mise tool setup](../operations/mise-tool-setup.md) alongside any approach when repeated Rust/Zig/helper-tool setup time matters.
-- Move to the source-keyed target cache only when repeated generated-code/build-script rebuilds are measurable and worth the extra workflow code.
+- Move to the source-keyed target cache only when affected local path workspace members repeatedly rebuild and the cost is worth the extra workflow code.
 - Use filesystem snapshots only when exact Cargo no-op fidelity matters more than operational complexity.
 - Do not use S3 Files for Cargo target no-op state based on these experiments; the remaining time was dominated by remote metadata/read behavior.
 

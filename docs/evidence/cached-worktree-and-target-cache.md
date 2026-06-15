@@ -16,7 +16,7 @@ Normal GitHub Actions checkout rewrote source mtimes. Cargo then saw local sourc
 
 The custom checkout restored a cached Git worktree, skipped checkout when `HEAD` already matched `GITHUB_SHA`, and otherwise checked out the new commit in place. Git rewrote changed files while unchanged files retained their previous mtimes.
 
-This removed the primary false invalidation. Most matrix jobs completed around 33 to 37 seconds, and a representative no-op Cargo step completed around 0.31 seconds. Generated-code and build-script chains remained as 50 to 65 second outliers.
+This removed the primary false invalidation and showed that the default approach can produce a Cargo no-op. Most matrix jobs completed around 33 to 37 seconds, and a representative no-op Cargo step completed around 0.31 seconds. Local path workspace members in generated-code and build-script chains remained as 50 to 65 second outliers.
 
 ### Exact `rust-cache` Hit
 
@@ -71,7 +71,7 @@ Introducing `--locked` against an older source-only target key caused some works
 
 - Stable source mtimes remove one major source of false invalidation.
 - They do not solve immutable exact target-cache hits whose keys omit workspace source and build semantics.
-- A source-keyed full-target cache solves those outliers when restored after `rust-cache`.
+- A source-keyed full-target cache solves the affected local path workspace-member outliers when restored after `rust-cache`.
 - A native split-cache `target-key` design is viable, but the copyable external workaround remains necessary until equivalent upstream support exists.
 
 ## Limitations
@@ -83,7 +83,7 @@ Introducing `--locked` against an older source-only target key caused some works
 ## Implications
 
 - Use the mtime-preserving cached worktree as the default low-complexity fix.
-- Add the source-keyed full-target cache only when repeated outliers are measurable and costly.
+- Add the source-keyed full-target cache only when affected local path workspace members repeatedly rebuild and the cost is material.
 - Keep the external workaround until upstream `rust-cache` exposes equivalent source-keyed target caching.
 
 ## Related Guidance

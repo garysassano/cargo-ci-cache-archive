@@ -112,7 +112,7 @@ The first run after a namespace bump should seed the new target cache. The immed
 
 Mise setup caching makes tool installation fast. It does not by itself prove Cargo units fresh. Cargo no-op behavior still depends on source mtimes, target fingerprints, dep-info files, build-script outputs, registry source paths, and consistent build semantics.
 
-Keep using the selected Cargo cache approach, such as `Swatinem/rust-cache` with mtime-preserving checkout, and use source-keyed target caches when workspace rebuild outliers justify them.
+Keep using the selected Cargo cache approach, such as `Swatinem/rust-cache` with mtime-preserving checkout, and use a source-keyed target cache when affected local path workspace members repeatedly rebuild and justify the extra cache composition.
 
 ## Official References
 

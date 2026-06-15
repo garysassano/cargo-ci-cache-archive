@@ -136,7 +136,7 @@ These are the only choices that are specific to deploying on RunsOn rather than 
 
 Keep the cache-ownership boundaries above strict: declare stable helper tools in mise instead of `cargo install`, and do not let `rust-cache` and mise both own `$CARGO_HOME/bin`.
 
-These settings still use dependency-oriented `rust-cache` target cleanup rather than a complete target snapshot. If measurable generated-code or build-script outliers persist, use the [source-keyed full-target workaround](../../approaches/rust-cache-source-keyed-target-cache.md).
+These settings can produce warm Cargo no-op builds, but they still use dependency-oriented `rust-cache` target cleanup rather than a complete target snapshot. If affected local path workspace members repeatedly rebuild on exact cache hits, use the [source-keyed full-target workaround](../../approaches/rust-cache-source-keyed-target-cache.md).
 
 ## Workflow Shape
 

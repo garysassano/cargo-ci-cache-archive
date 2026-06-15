@@ -5,7 +5,7 @@
 | Field | Value |
 | --- | --- |
 | Status | Proven workaround |
-| Use when | Repeated workspace rebuild outliers are expensive enough to justify custom cache composition. |
+| Use when | Affected local path workspace members repeatedly rebuild and are expensive enough to justify custom cache composition. |
 | Main tradeoff | More workflow logic, broader invalidation, and strict restore ordering. |
 
 ## Related Files
@@ -123,7 +123,7 @@ target-key: locked-v1-${{ steps.source-key.outputs.hash }}
 
 Increment the namespace when changing build flags, target triples, Cargo features, profiles, compiler wrappers, or other options that can affect Cargo fingerprints. If the command changes but the target key does not, Cargo may rebuild against an exact target-cache hit and the cache action will correctly skip saving because the key was exact.
 
-The repeated outliers this fixed were generated-code/build-script chains. Tight `cargo:rerun-if-changed` hints are still good build-script hygiene, but they do not fix stale exact target-cache restores when the target cache key ignores workspace source state.
+The repeated outliers this fixed were local path workspace members in generated-code/build-script chains. Tight `cargo:rerun-if-changed` hints are still good build-script hygiene, but they do not fix stale exact target-cache restores when the target cache key ignores workspace source state.
 
 ## Cargo Flag Notes
 
@@ -153,7 +153,8 @@ The [cached worktree and source-keyed target-cache evidence](../evidence/cached-
 
 Use this workaround if:
 
-- Generated-code/build-script rebuilds are too expensive.
+- Affected local path workspace members repeatedly rebuild on exact `rust-cache` hits.
+- Those rebuilds are expensive enough to justify custom cache composition.
 - A fork/adapter is warranted because upstream does not support the use case.
 
 Retire or simplify this workaround if upstream `rust-cache` adds equivalent source-keyed target caching.

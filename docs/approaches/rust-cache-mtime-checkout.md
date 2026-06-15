@@ -5,8 +5,8 @@
 | Field | Value |
 | --- | --- |
 | Status | Recommended Cargo cache default |
-| Use when | You want maintained, simple CI with strong repeated-run performance. |
-| Main tradeoff | Some generated-code and build-script chains can still rebuild on exact target-cache hits. |
+| Use when | You want maintained, simple CI that can produce warm Cargo no-op builds. |
+| Main tradeoff | Affected local path workspace members can still rebuild on exact target-cache hits. |
 
 ## Related Files
 
@@ -124,6 +124,7 @@ env:
 - Maintained upstream cache action.
 - Minimal custom logic.
 - Fixes the biggest false rebuild source: source mtime churn.
+- Can produce warm Cargo no-op builds.
 - Avoids network filesystem metadata latency.
 - Good repeated-run performance for most jobs.
 
@@ -131,7 +132,7 @@ env:
 
 - `rust-cache` target keys intentionally do not include workspace source contents.
 - Exact cache hits can restore stale workspace artifacts and then skip saving rebuilt target state.
-- Build-script/generated-code workspace crates can rebuild repeatedly in some jobs.
+- Affected local path workspace members can therefore rebuild repeatedly in some jobs.
 
 ## Related Alternatives And Upstream Work
 
@@ -185,12 +186,12 @@ Follow the official [tracking issue `cargo#14136`](https://github.com/rust-lang/
 
 ## Evidence
 
-The [cached worktree and source-keyed target-cache evidence](../evidence/cached-worktree-and-target-cache.md) records the normal-checkout failure, the improvement from stable source mtimes, the remaining generated-code/build-script outliers, and the measured workaround results.
+The [cached worktree and source-keyed target-cache evidence](../evidence/cached-worktree-and-target-cache.md) records the normal-checkout failure, the warm Cargo no-op result after stabilizing source mtimes, the remaining local path workspace-member outliers in generated-code/build-script jobs, and the measured workaround results.
 
 ## Decision
 
 Use this as the default for most Rust GitHub Actions CI workflows where:
 
 - You want maintained upstream behavior.
-- You can tolerate occasional generated-code/build-script outliers.
-- You value simplicity over maximum theoretical Cargo no-op fidelity.
+- You do not have costly repeated rebuilds from affected local path workspace members.
+- You value simplicity over custom target-cache composition.

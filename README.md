@@ -15,7 +15,7 @@ It covers:
 
 ## Current Recommendation
 
-Use `mise-action` for Rust-adjacent tool setup, then use `Swatinem/rust-cache` in the normal way, combined with a checkout/worktree strategy that preserves unchanged source file mtimes. If true full Cargo no-op behavior becomes necessary, the source-keyed target-cache workaround is documented and proven.
+Use `jdx/mise-action` for Rust, Zig, and Cargo-distributed helper-tool setup. For Cargo state, use `Swatinem/rust-cache` with workspace-crate caching and an mtime-preserving cached worktree checkout; this default can produce warm Cargo no-op builds. Use the source-keyed full-target cache when affected local path workspace members repeatedly rebuild on exact `rust-cache` hits.
 
 This is a summary. The [Decisions](docs/decisions/README.md) page is the single source of truth for the archive's conclusions and their status, and the [RunsOn deployment](docs/deployments/runs-on/README.md) documents how the recommended approach is deployed.
 
