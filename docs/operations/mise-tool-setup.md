@@ -20,8 +20,6 @@ Use inline `mise_toml` in the workflow when the tool set is CI-specific:
 env:
   MISE_DATA_DIR: ${{ github.workspace }}/.mise
   MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
-  # Required when later build steps run outside $GITHUB_WORKSPACE, such as from /tmp.
-  MISE_OVERRIDE_CONFIG_FILENAMES: ${{ github.workspace }}/mise.toml
 
 steps:
   - name: Setup Toolchain
@@ -42,8 +40,6 @@ For a Trunk/WebAssembly job:
 env:
   MISE_DATA_DIR: ${{ github.workspace }}/.mise
   MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
-  # Required when later build steps run outside $GITHUB_WORKSPACE, such as from /tmp.
-  MISE_OVERRIDE_CONFIG_FILENAMES: ${{ github.workspace }}/mise.toml
 
 steps:
   - name: Setup Toolchain
@@ -65,7 +61,7 @@ Do not use `depends = ["rust", "cargo-binstall"]` to compensate for hidden confi
 | --- | --- |
 | Inline `mise_toml`, build from `/tmp`, no override | Failed: `mise which cargo-lambda` and `cargo lambda --help` both returned status `1`. |
 | Inline `mise_toml`, build from `/tmp`, `MISE_OVERRIDE_CONFIG_FILENAMES=$GITHUB_WORKSPACE/mise.toml` | Passed. |
-| Inline `mise_toml`, build from `$GITHUB_WORKSPACE/worktree/app` | Passed. |
+| Inline `mise_toml`, build from `$GITHUB_WORKSPACE/cached-worktree/app` | Passed. |
 | Real `mise.toml` written into `/tmp/.../app`, `mise-action` run with `working_directory` there | Passed. |
 
 The failure was not an install failure. `mise install` installed `cargo-lambda`, and `mise ls` showed it. The later build failed because the shim ran from `/tmp/.../app`, could not discover `$GITHUB_WORKSPACE/mise.toml`, and reported `No version is set for shim: cargo-lambda`.
@@ -83,7 +79,6 @@ Required for warm setup caches:
 env:
   MISE_DATA_DIR: ${{ github.workspace }}/.mise
   MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
-  MISE_OVERRIDE_CONFIG_FILENAMES: ${{ github.workspace }}/mise.toml # if builds run from /tmp
 
 steps:
   - name: Setup Toolchain
@@ -100,7 +95,7 @@ steps:
 
 `MISE_OVERRIDE_CONFIG_FILENAMES` is required when `mise-action` uses inline `mise_toml` and later build steps run outside `$GITHUB_WORKSPACE`. The action writes inline `mise_toml` to `$GITHUB_WORKSPACE/mise.toml`; it does not write it to `mise_dir`, and `working_directory` does not change where the inline file is written. If the build runs from `/tmp/.../app`, mise's normal upward config search will not find `$GITHUB_WORKSPACE/mise.toml` unless this override is set.
 
-If the build worktree is under `$GITHUB_WORKSPACE`, for example `$GITHUB_WORKSPACE/worktree/app`, `MISE_OVERRIDE_CONFIG_FILENAMES` is not needed because mise can discover `$GITHUB_WORKSPACE/mise.toml` naturally.
+If the build worktree is under `$GITHUB_WORKSPACE`, for example `$GITHUB_WORKSPACE/cached-worktree/app`, `MISE_OVERRIDE_CONFIG_FILENAMES` is not needed because mise can discover `$GITHUB_WORKSPACE/mise.toml` naturally. Prefer a descriptive directory name such as `cached-worktree` over `cached` because this workflow also caches mise data, Cargo target directories, and Rust/Cargo state.
 
 ```mermaid
 flowchart TD
