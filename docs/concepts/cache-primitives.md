@@ -29,7 +29,7 @@ Best for:
 - Dependency-oriented target artifacts.
 - Setup action tarballs.
 - Tool installer caches.
-- `mise-action` tool installs under `MISE_DATA_DIR`.
+- `mise-action` setup tools when `MISE_DATA_DIR` and `MISE_RUSTUP_HOME` point at the same cached tree.
 
 Limitations:
 
