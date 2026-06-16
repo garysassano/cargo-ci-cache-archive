@@ -19,7 +19,7 @@ Use inline `mise_toml` in the workflow when the tool set is CI-specific:
   uses: jdx/mise-action@v4
   with:
     cache: true
-    cache_key_prefix: mise-v4
+    mise_dir: ${{ github.workspace }}/.mise
     mise_toml: |
       [tools]
       zig = "0.16.0"
@@ -35,7 +35,7 @@ For a Trunk/WebAssembly job:
   uses: jdx/mise-action@v4
   with:
     cache: true
-    cache_key_prefix: mise-v4
+    mise_dir: ${{ github.workspace }}/.mise
     mise_toml: |
       [tools]
       rust = { version = "stable", components = "rustfmt", targets = "wasm32-unknown-unknown" }
@@ -53,15 +53,21 @@ Prefer the mise Cargo backend for Cargo-distributed tools over the GitHub releas
 
 ## Environment Variables
 
-Recommended:
+Required for workflows that run later build steps from a different workspace or rely on mise shims after `mise-action`:
+
+```yaml
+with:
+  mise_dir: ${{ github.workspace }}/.mise
+```
+
+Also set `RUSTUP_HOME` in the job environment:
 
 ```yaml
 env:
-  MISE_DATA_DIR: ${{ github.workspace }}/.mise
   RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
 ```
 
-`MISE_DATA_DIR` keeps mise installs under a path that `mise-action` caches.
+`mise_dir` keeps mise installs and shims under a path that `mise-action` caches and that remains tied to the workflow workspace. Without it, mise defaults to `~/.local/share/mise`; later commands such as `cargo lambda` can hit a mise shim that cannot resolve the inline `mise_toml` version after the build step changes directories.
 
 `RUSTUP_HOME` keeps Rust toolchains and rustup targets under the mise cache. This matters because mise manages Rust through rustup; Rust does not live under mise's normal `installs/` directory.
 
