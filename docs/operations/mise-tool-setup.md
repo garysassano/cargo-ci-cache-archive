@@ -31,7 +31,7 @@ steps:
         zig = "0.16.0"
         rust = { version = "stable", components = "rustfmt", targets = "aarch64-unknown-linux-gnu" }
         cargo-binstall = "latest"
-        "cargo:cargo-lambda" = "latest"
+        "cargo:cargo-lambda" = { version = "1.9.1", depends = ["rust", "cargo-binstall"] }
 ```
 
 For a Trunk/WebAssembly job:
@@ -50,10 +50,12 @@ steps:
         [tools]
         rust = { version = "stable", components = "rustfmt", targets = "wasm32-unknown-unknown" }
         cargo-binstall = "latest"
-        "cargo:trunk" = "latest"
+        "cargo:trunk" = { version = "0.21.14", depends = ["rust", "cargo-binstall"] }
 ```
 
 Install `cargo-binstall` first so mise can use prebuilt binaries where available instead of compiling tool CLIs.
+
+Keep `depends = ["rust", "cargo-binstall"]` on Cargo-backed setup tools. In the tested workflow, removing this dependency from `cargo:cargo-lambda` left the `cargo-lambda` shim on `PATH` but without an active version when the later `cargo lambda build` step ran from the cached worktree. The result was `mise ERROR No version is set for shim: cargo-lambda`. The `depends` edge makes mise install and export the Cargo-backed tool with Rust and `cargo-binstall` available.
 
 Prefer the mise Cargo backend for Cargo-distributed tools over the GitHub release backend:
 
