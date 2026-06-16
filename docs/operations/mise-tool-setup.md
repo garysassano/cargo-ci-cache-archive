@@ -20,6 +20,8 @@ Use inline `mise_toml` in the workflow when the tool set is CI-specific:
 env:
   MISE_DATA_DIR: ${{ github.workspace }}/.mise
   MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
+  # Required when later build steps run outside $GITHUB_WORKSPACE, such as from /tmp.
+  MISE_OVERRIDE_CONFIG_FILENAMES: ${{ github.workspace }}/mise.toml
 
 steps:
   - name: Setup Toolchain
@@ -31,7 +33,7 @@ steps:
         zig = "0.16.0"
         rust = { version = "stable", components = "rustfmt", targets = "aarch64-unknown-linux-gnu" }
         cargo-binstall = "latest"
-        "cargo:cargo-lambda" = { version = "1.9.1", depends = ["rust", "cargo-binstall"] }
+        "cargo:cargo-lambda" = "1.9.1"
 ```
 
 For a Trunk/WebAssembly job:
@@ -40,6 +42,8 @@ For a Trunk/WebAssembly job:
 env:
   MISE_DATA_DIR: ${{ github.workspace }}/.mise
   MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
+  # Required when later build steps run outside $GITHUB_WORKSPACE, such as from /tmp.
+  MISE_OVERRIDE_CONFIG_FILENAMES: ${{ github.workspace }}/mise.toml
 
 steps:
   - name: Setup Toolchain
@@ -50,12 +54,21 @@ steps:
         [tools]
         rust = { version = "stable", components = "rustfmt", targets = "wasm32-unknown-unknown" }
         cargo-binstall = "latest"
-        "cargo:trunk" = { version = "0.21.14", depends = ["rust", "cargo-binstall"] }
+        "cargo:trunk" = "0.21.14"
 ```
 
 Install `cargo-binstall` first so mise can use prebuilt binaries where available instead of compiling tool CLIs.
 
-Keep `depends = ["rust", "cargo-binstall"]` on Cargo-backed setup tools. In the tested workflow, removing this dependency from `cargo:cargo-lambda` left the `cargo-lambda` shim on `PATH` but without an active version when the later `cargo lambda build` step ran from the cached worktree. The result was `mise ERROR No version is set for shim: cargo-lambda`. The `depends` edge makes mise install and export the Cargo-backed tool with Rust and `cargo-binstall` available.
+Do not use `depends = ["rust", "cargo-binstall"]` to compensate for hidden config discovery problems. A diagnostic workflow tested four layouts with `"cargo:cargo-lambda" = "1.9.1"` and no `depends`:
+
+| Layout | Result |
+| --- | --- |
+| Inline `mise_toml`, build from `/tmp`, no override | Failed: `mise which cargo-lambda` and `cargo lambda --help` both returned status `1`. |
+| Inline `mise_toml`, build from `/tmp`, `MISE_OVERRIDE_CONFIG_FILENAMES=$GITHUB_WORKSPACE/mise.toml` | Passed. |
+| Inline `mise_toml`, build from `$GITHUB_WORKSPACE/worktree/app` | Passed. |
+| Real `mise.toml` written into `/tmp/.../app`, `mise-action` run with `working_directory` there | Passed. |
+
+The failure was not an install failure. `mise install` installed `cargo-lambda`, and `mise ls` showed it. The later build failed because the shim ran from `/tmp/.../app`, could not discover `$GITHUB_WORKSPACE/mise.toml`, and reported `No version is set for shim: cargo-lambda`.
 
 Prefer the mise Cargo backend for Cargo-distributed tools over the GitHub release backend:
 
@@ -70,6 +83,7 @@ Required for warm setup caches:
 env:
   MISE_DATA_DIR: ${{ github.workspace }}/.mise
   MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
+  MISE_OVERRIDE_CONFIG_FILENAMES: ${{ github.workspace }}/mise.toml # if builds run from /tmp
 
 steps:
   - name: Setup Toolchain
@@ -83,6 +97,10 @@ steps:
 `mise_dir` is still useful as an explicit override, but it is not required when `MISE_DATA_DIR` is already set. If both are used, they should point at the same path. Setting only `mise_dir` is not equivalent to setting `MISE_DATA_DIR`, because `mise-action` does not export `MISE_DATA_DIR` for mise.
 
 `MISE_RUSTUP_HOME` keeps Rust toolchains and rustup targets under the same cached tree. This matters because mise manages Rust through rustup; Rust does not live under mise's normal `installs/` directory. The official mise Rust docs state that Rust respects `RUSTUP_HOME` and `CARGO_HOME`, and that `MISE_RUSTUP_HOME` and `MISE_CARGO_HOME` can isolate mise's rustup/cargo state from other installations.
+
+`MISE_OVERRIDE_CONFIG_FILENAMES` is required when `mise-action` uses inline `mise_toml` and later build steps run outside `$GITHUB_WORKSPACE`. The action writes inline `mise_toml` to `$GITHUB_WORKSPACE/mise.toml`; it does not write it to `mise_dir`, and `working_directory` does not change where the inline file is written. If the build runs from `/tmp/.../app`, mise's normal upward config search will not find `$GITHUB_WORKSPACE/mise.toml` unless this override is set.
+
+If the build worktree is under `$GITHUB_WORKSPACE`, for example `$GITHUB_WORKSPACE/worktree/app`, `MISE_OVERRIDE_CONFIG_FILENAMES` is not needed because mise can discover `$GITHUB_WORKSPACE/mise.toml` naturally.
 
 ```mermaid
 flowchart TD
@@ -98,6 +116,14 @@ flowchart TD
     H --> I[Rustup stores Rust toolchains in<br/>$GITHUB_WORKSPACE/.mise/rustup]
     I --> J[rust stable and targets]
 
+    B --> O[mise_toml input]
+    O --> P[Writes config to<br/>$GITHUB_WORKSPACE/mise.toml]
+
+    P --> Q{Build cwd under<br/>$GITHUB_WORKSPACE?}
+    Q -->|Yes| K
+    Q -->|No| R[Set MISE_OVERRIDE_CONFIG_FILENAMES]
+    R --> K
+
     G --> K[Use tools during build]
     J --> K
 
@@ -108,7 +134,7 @@ flowchart TD
 Usually not required:
 
 - `RUSTUP_HOME`: prefer `MISE_RUSTUP_HOME` when Rust is managed by mise, because it makes ownership explicit and avoids changing non-mise rustup behavior.
-- `MISE_OVERRIDE_CONFIG_FILENAMES`: not set by `mise-action`, but generally unnecessary after `mise-action` exports the resolved environment for later steps.
+- `depends`: not required for Cargo-backed setup tools when the later build can discover the same mise config that `mise-action` used. It may still be useful for documenting install order, but it should not be used as the fix for config visibility.
 
 Avoid:
 
