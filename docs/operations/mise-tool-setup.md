@@ -97,6 +97,19 @@ steps:
 
 If the build worktree is under `$GITHUB_WORKSPACE`, for example `$GITHUB_WORKSPACE/cached-worktree/app`, `MISE_OVERRIDE_CONFIG_FILENAMES` is not needed because mise can discover `$GITHUB_WORKSPACE/mise.toml` naturally. Prefer a descriptive directory name such as `cached-worktree` over `cached` because this workflow also caches mise data, Cargo target directories, and Rust/Cargo state.
 
+A clear workspace layout is:
+
+```yaml
+env:
+  CACHED_WORKTREE: ${{ github.workspace }}/cached-worktree
+  CACHED_CARGO_TARGET_DIR: ${{ github.workspace }}/cached-cargo-target-${{ matrix.lambda.name }}
+  CACHED_CONSOLE_TARGET_DIR: ${{ github.workspace }}/cached-console-ui-target
+  MISE_DATA_DIR: ${{ github.workspace }}/.mise
+  MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
+```
+
+Keep Cargo target directories outside `cached-worktree/app` so source checkout state and build output state remain separate, but keep them under `$GITHUB_WORKSPACE` so all restored/saved CI state is easy to inspect.
+
 ```mermaid
 flowchart TD
     A[GitHub Actions job starts] --> B[mise-action runs]
