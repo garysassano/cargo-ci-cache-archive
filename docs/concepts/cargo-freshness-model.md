@@ -87,12 +87,17 @@ or preinstall the tools if their setup time matters.
 
 `Swatinem/rust-cache` can include `$CARGO_HOME/bin` when `cache-bin=true`, but
 that is not a complete setup-tool cache strategy. In the tested workflow,
-`taiki-e/install-action` still installed `cargo-lambda` and `trunk` on every job,
-so `cache-bin=true` did not remove that setup cost. The action also records which
-cargo bin entries existed at restore time and removes those pre-existing entries
-before saving, so binaries restored from an earlier cache can be cleaned before
-the next save. Prefer preinstalled runner tools or setup-action caches for stable
-commands such as `cargo-lambda` and `trunk`.
+`cargo-lambda`, `trunk`, Zig, Rust targets, and `cargo-binstall` are setup state
+managed by `mise-action`, not Cargo freshness proof. The action also records
+which cargo bin entries existed at restore time and removes those pre-existing
+entries before saving, so binaries restored from an earlier cache can be cleaned
+before the next save. Prefer preinstalled runner tools or setup-action caches for
+stable commands, with `mise-action` as the default portable setup cache.
+
+For mise-managed Cargo subcommands such as `cargo-lambda`, successful installation
+is not enough. The later build command must run where mise can discover the same
+config used by `mise-action`; otherwise the shim can report `No version is set for
+shim: cargo-lambda` even though the binary exists under `MISE_DATA_DIR`.
 
 ## Where Cargo Stores Inter-Build State
 

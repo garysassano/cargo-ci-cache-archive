@@ -30,6 +30,7 @@ Best for:
 - Setup action tarballs.
 - Tool installer caches.
 - `mise-action` setup tools when `MISE_DATA_DIR` and `MISE_RUSTUP_HOME` point at the same cached tree.
+- Cached source worktrees, such as `$GITHUB_WORKSPACE/cached-worktree`, when the goal is preserving source mtimes across runs.
 
 Limitations:
 
@@ -104,3 +105,5 @@ Limitations for Cargo target state:
 | Cache setup tools and toolchains | Archive cache through `mise-action` |
 | Share state across workers without archives | Network filesystem, but not ideal for Cargo target no-op |
 | Keep workflow simple and maintained | `mise-action` plus `Swatinem/rust-cache` plus mtime-preserving checkout |
+
+When using `mise-action` with inline `mise_toml`, keep the later build directory under `$GITHUB_WORKSPACE` or set `MISE_OVERRIDE_CONFIG_FILENAMES`; otherwise mise shims can run from a directory that cannot discover the config written by the action.

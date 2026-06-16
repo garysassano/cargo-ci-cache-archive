@@ -2,7 +2,7 @@
 
 These examples are intentionally generic. They are meant to preserve the workflow shapes and ordering constraints discovered during the cache experiments, not to be copied without adapting package names, paths, runner labels, credentials, and deployment steps.
 
-For CI tool setup, prefer inline `mise_toml` with `jdx/mise-action`; see [Mise Tool Setup](../docs/operations/mise-tool-setup.md). The workflow examples focus on Cargo cache layouts and may omit project-specific tool installation details.
+For CI tool setup, prefer inline `mise_toml` with `jdx/mise-action`; see [Mise Tool Setup](../docs/operations/mise-tool-setup.md). Keep the cached source worktree under `$GITHUB_WORKSPACE` or configure mise's override config path so later shims can discover the inline config. The workflow examples focus on Cargo cache layouts and may omit project-specific tool installation details.
 
 ## Workflows
 

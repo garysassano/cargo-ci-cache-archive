@@ -45,14 +45,14 @@ removes pre-existing cargo bin entries
 ```
 
 `cache-bin=true` should not be treated as a general setup-tool cache. In the
-tested workflow it was effectively not useful for `cargo-lambda` or `trunk`,
-because those commands were installed by `taiki-e/install-action` after
-`rust-cache` restored and the install step still ran on every job. Binaries that
-are restored into `$CARGO_HOME/bin` also exist before the `rust-cache` post step
-computes what changed during the job, so they can be considered pre-existing and
-removed before the next save. For stable CI helper tools, prefer a custom runner
-image, the setup action's own cache, or an explicit tool cache. Use `rust-cache`
-for `$CARGO_HOME/bin` only when that tradeoff is acceptable.
+tested workflow it was not the right home for stable helper tools such as
+`cargo-lambda` or `trunk`; those are setup state now handled by `mise-action` and
+RunsOn Magic Cache. Binaries restored into `$CARGO_HOME/bin` also exist before the
+`rust-cache` post step computes what changed during the job, so they can be
+considered pre-existing and removed before the next save. For stable CI helper
+tools, prefer a custom runner image, the setup action's own cache, or an explicit
+tool cache. Use `rust-cache` for `$CARGO_HOME/bin` only when that tradeoff is
+acceptable.
 
 An EBS snapshot preserves the mounted filesystem subtree. If the path is under the snapshot root and was not removed before the post step, it is saved.
 
@@ -64,7 +64,7 @@ An EBS snapshot preserves the mounted filesystem subtree. If the path is under t
 | `$CARGO_HOME/registry`, `$CARGO_HOME/git` | `rust-cache` for practical dependency caching, EBS snapshot for full filesystem continuity | Extracted sources and mtimes can matter for perfect no-op behavior. |
 | `$XDG_CACHE_HOME/cargo-zigbuild` | EBS snapshot or explicit cache if the helper cache matters | This is Cargo-helper state created by a Cargo build frontend. |
 | Trunk tool cache | Custom AMI, explicit cache, or snapshot | Trunk downloads helper tools outside Cargo target state. Cache these paths separately if their install time matters. |
-| Cargo-installed helper binaries | Custom AMI or setup-action cache preferred | These are setup state, not freshness proof; `rust-cache cache-bin` may not persist them reliably across runs. |
+| Cargo-installed helper binaries | Custom AMI or `mise-action` cache preferred | These are setup state, not freshness proof; `rust-cache cache-bin` may not persist them reliably across runs. |
 | Rust toolchain and rustup targets | Custom AMI preferred, otherwise setup action/Magic Cache | Toolchain state is large and stable. |
 | Zig compiler install | Custom AMI preferred, otherwise setup action/Magic Cache | Stable tool state. |
 | Zig tarball/download cache | `actions/cache` or RunsOn Magic Cache | Immutable download archives fit keyed archive cache semantics. |

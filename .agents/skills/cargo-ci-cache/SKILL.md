@@ -54,7 +54,7 @@ Use alternatives only when the workload justifies them:
 
 | Need | Recommendation |
 | --- | --- |
-| Fast repeated setup for Rust/Zig/Cargo helper tools | `mise-action` with inline `mise_toml` and RunsOn Magic Cache |
+| Fast repeated setup for Rust/Zig/Cargo helper tools | `mise-action` with inline `mise_toml`, `MISE_DATA_DIR`, `MISE_RUSTUP_HOME`, and RunsOn Magic Cache |
 | Maintained, simple, fast repeated-run CI | `Swatinem/rust-cache` plus mtime-preserving checkout |
 | True no-op for repeated generated-code/build-script outliers | Source-keyed full target cache restored after `rust-cache` |
 | Maximum local no-op fidelity and acceptable infra overhead | Filesystem snapshot / EBS snapshot layout |
@@ -94,7 +94,9 @@ build with explicit CARGO_TARGET_DIR
 
 Do not restore the full target directory before `rust-cache`; `rust-cache` cleanup can remove workspace artifacts.
 
-Bump the target-key namespace after changing build or setup semantics, including switching tool installers to mise, moving Rust/rustup home, changing targets, or changing build flags.
+Bump the target-key namespace after changing build or setup semantics, including switching tool installers to mise, moving Rust/rustup home, moving cached target directories, changing targets, or changing build flags.
+
+For mise setup, prefer a cached source worktree under `$GITHUB_WORKSPACE` such as `$GITHUB_WORKSPACE/cached-worktree/app`. Inline `mise_toml` is written to `$GITHUB_WORKSPACE/mise.toml`; builds outside `$GITHUB_WORKSPACE` need `MISE_OVERRIDE_CONFIG_FILENAMES` or a local `mise.toml`. Do not use mise `depends` as a workaround for config discovery failures.
 
 Fast source key shape:
 

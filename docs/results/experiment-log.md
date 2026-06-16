@@ -189,12 +189,19 @@ Cargo flag lesson:
 
 Tool-cache lesson:
 
-- `cache-bin=true` did not remove the need for setup actions to install helper
+- `cache-bin=true` did not remove the need for a dedicated setup layer for helper
   commands such as `cargo-lambda` and `trunk` on every job in the tested workflow.
 - Treat Cargo-installed helper binaries and frontend-managed tools as setup state,
   not Cargo freshness proof.
-- Preinstall stable helper tools in the runner image, use the setup action's own
-  cache when available, or cache the tool's own cache directory explicitly.
+- Preinstall stable helper tools in the runner image, use `mise-action`/setup
+  action caching when available, or cache the tool's own cache directory explicitly.
+- Inline `mise_toml` is written under `$GITHUB_WORKSPACE`; later Cargo commands
+  must run where mise can discover that config. A cached worktree under
+  `$GITHUB_WORKSPACE/cached-worktree/app` worked without overrides, while a `/tmp`
+  worktree needed `MISE_OVERRIDE_CONFIG_FILENAMES` or a local `mise.toml`.
+- `depends = ["rust", "cargo-binstall"]` on mise Cargo tools is not the fix for
+  `No version is set for shim`; that error came from config discovery, not missing
+  installation.
 - For Trunk, the remaining repeated-run time came mostly from its own pipeline:
   pre-build hook, helper tool downloads/installs, wasm processing, and dist
   application, rather than from missing Cargo target artifacts.

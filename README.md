@@ -15,7 +15,7 @@ It covers:
 
 ## Current Recommendation
 
-Use `mise-action` for Rust-adjacent tool setup, then use `Swatinem/rust-cache` in the normal way, combined with a checkout/worktree strategy that preserves unchanged source file mtimes.
+Use `mise-action` for Rust-adjacent tool setup, then use `Swatinem/rust-cache` in the normal way, combined with a checkout/worktree strategy that preserves unchanged source file mtimes. Keep the cached source worktree under `$GITHUB_WORKSPACE`, for example `$GITHUB_WORKSPACE/cached-worktree/app`, so mise can discover the inline `mise_toml` written by `mise-action`.
 
 This is the pragmatic default because it makes repeated setup of Zig, Rust targets, `cargo-lambda`, `trunk`, and similar tools cheap on RunsOn Magic Cache, relies on maintained upstream behavior, avoids custom target-cache choreography in every workflow, and still gets most matrix jobs into the fast repeated-run path. If true full Cargo no-op behavior becomes necessary, the source-keyed target-cache workaround is documented and proven.
 
@@ -68,6 +68,7 @@ If one of these is missing, stale, moved, or newer than expected, Cargo can mark
 - Preserving source mtimes with a cached Git worktree is the highest-value low-complexity fix.
 - `Swatinem/rust-cache` is excellent for dependency-oriented caching and Cargo home restoration.
 - `mise-action` is the preferred setup layer for Rust toolchains, targets, Zig, and Cargo-installed helper tools when backed by RunsOn Magic Cache.
+- Inline `mise_toml` is written to `$GITHUB_WORKSPACE/mise.toml`; if builds run outside `$GITHUB_WORKSPACE`, configure mise explicitly or move the cached worktree under `$GITHUB_WORKSPACE`.
 - `Swatinem/rust-cache` target caching is not equivalent to a full local target snapshot.
 - `cache-workspace-crates: true` helps, but exact cache hits can still restore stale workspace target state because source contents are not part of the target key.
 - EBS snapshots can reproduce local no-op behavior most faithfully, but operational overhead and workflow complexity are higher.
