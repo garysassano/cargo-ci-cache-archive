@@ -114,11 +114,15 @@ Keep Cargo target directories outside `cached-worktree/app` so source checkout s
 flowchart TD
     A[GitHub Actions job starts] --> B[mise-action runs]
 
-    B --> C[MISE_DATA_DIR env var]
-    C --> D[Action restores/saves cache at<br/>$GITHUB_WORKSPACE/.mise]
+    B --> C{mise_dir input set?}
+    C -->|Yes| D[Action cache path uses<br/>mise_dir]
+    C -->|No| E[Action cache path falls back to<br/>MISE_DATA_DIR]
+    D --> D2[Action restores/saves<br/>its selected cache path]
+    E --> D2
 
-    C --> F[Normal mise tools install in<br/>$GITHUB_WORKSPACE/.mise]
-    F --> G[zig, cargo-binstall, cargo-lambda, trunk]
+    B --> F[MISE_DATA_DIR env var]
+    F --> F2[Normal mise tools install in<br/>$GITHUB_WORKSPACE/.mise]
+    F2 --> G[zig, cargo-binstall, cargo-lambda, trunk]
 
     B --> H[MISE_RUSTUP_HOME env var]
     H --> I[Rustup stores Rust toolchains in<br/>$GITHUB_WORKSPACE/.mise/rustup]
@@ -135,7 +139,7 @@ flowchart TD
     G --> K[Use tools during build]
     J --> K
 
-    D --> L[Restored .mise is the same tree<br/>mise and rustup use]
+    D2 --> L[Recommended: action cache path<br/>and MISE_DATA_DIR are the same tree]
     L --> M[Faster toolchain setup]
 ```
 
