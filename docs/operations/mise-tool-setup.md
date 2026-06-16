@@ -25,7 +25,7 @@ Use inline `mise_toml` in the workflow when the tool set is CI-specific:
       zig = "0.16.0"
       rust = { version = "stable", components = "rustfmt", targets = "aarch64-unknown-linux-gnu" }
       cargo-binstall = "latest"
-      "cargo:cargo-lambda" = { version = "latest", depends = ["rust", "cargo-binstall"] }
+      "cargo:cargo-lambda" = "latest"
 ```
 
 For a Trunk/WebAssembly job:
@@ -40,7 +40,7 @@ For a Trunk/WebAssembly job:
       [tools]
       rust = { version = "stable", components = "rustfmt", targets = "wasm32-unknown-unknown" }
       cargo-binstall = "latest"
-      "cargo:trunk" = { version = "latest", depends = ["rust", "cargo-binstall"] }
+      "cargo:trunk" = "latest"
 ```
 
 Install `cargo-binstall` first so mise can use prebuilt binaries where available instead of compiling tool CLIs.
@@ -49,7 +49,6 @@ Prefer the mise Cargo backend for Cargo-distributed tools over the GitHub releas
 
 - Use `"cargo:cargo-lambda"` for `cargo-lambda`.
 - Use `"cargo:trunk"` for Trunk.
-- Use explicit `depends = ["rust", "cargo-binstall"]` for Cargo backend tools so the Rust toolchain and `cargo-binstall` exist before mise installs them.
 
 ## Environment Variables
 
