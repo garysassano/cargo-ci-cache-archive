@@ -197,8 +197,9 @@ Tool-cache lesson:
   action caching when available, or cache the tool's own cache directory explicitly.
 - Inline `mise_toml` is written under `$GITHUB_WORKSPACE`; later Cargo commands
   must run where mise can discover that config. A cached worktree under
-  `$GITHUB_WORKSPACE/cached-worktree/app` worked without overrides, while a `/tmp`
-  worktree needed `MISE_OVERRIDE_CONFIG_FILENAMES` or a local `mise.toml`.
+  `$GITHUB_WORKSPACE/cached-worktree/app` worked without overrides.
+- With config discovery fixed, `zig = "latest"` and `"cargo:cargo-lambda" = "latest"`
+  were valid setup-tool declarations in the selected workflow.
 - `depends = ["rust", "cargo-binstall"]` on mise Cargo tools is not the fix for
   `No version is set for shim`; that error came from config discovery, not missing
   installation.

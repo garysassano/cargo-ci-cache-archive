@@ -28,10 +28,10 @@ steps:
       cache: true
       mise_toml: |
         [tools]
-        zig = "0.16.0"
+        zig = "latest"
         rust = { version = "stable", components = "rustfmt", targets = "aarch64-unknown-linux-gnu" }
         cargo-binstall = "latest"
-        "cargo:cargo-lambda" = "1.9.1"
+        "cargo:cargo-lambda" = "latest"
 ```
 
 For a Trunk/WebAssembly job:
@@ -55,16 +55,9 @@ steps:
 
 Install `cargo-binstall` first so mise can use prebuilt binaries where available instead of compiling tool CLIs.
 
-Do not use `depends = ["rust", "cargo-binstall"]` to compensate for hidden config discovery problems. A diagnostic workflow tested four layouts with `"cargo:cargo-lambda" = "1.9.1"` and no `depends`:
+Do not use `depends = ["rust", "cargo-binstall"]` to compensate for hidden config discovery problems. With the selected `$GITHUB_WORKSPACE/cached-worktree/app` layout, mise can discover the inline `mise_toml` naturally and Cargo-backed setup tools such as `cargo-lambda` work without `depends`.
 
-| Layout | Result |
-| --- | --- |
-| Inline `mise_toml`, build from `/tmp`, no override | Failed: `mise which cargo-lambda` and `cargo lambda --help` both returned status `1`. |
-| Inline `mise_toml`, build from `/tmp`, `MISE_OVERRIDE_CONFIG_FILENAMES=$GITHUB_WORKSPACE/mise.toml` | Passed. |
-| Inline `mise_toml`, build from `$GITHUB_WORKSPACE/cached-worktree/app` | Passed. |
-| Real `mise.toml` written into `/tmp/.../app`, `mise-action` run with `working_directory` there | Passed. |
-
-The failure was not an install failure. `mise install` installed `cargo-lambda`, and `mise ls` showed it. The later build failed because the shim ran from `/tmp/.../app`, could not discover `$GITHUB_WORKSPACE/mise.toml`, and reported `No version is set for shim: cargo-lambda`.
+The historical `No version is set for shim: cargo-lambda` failure was not an install failure. `mise install` installed `cargo-lambda`, and `mise ls` showed it. The later build failed because the shim ran from a worktree outside `$GITHUB_WORKSPACE`, could not discover `$GITHUB_WORKSPACE/mise.toml`, and therefore had no active version.
 
 Prefer the mise Cargo backend for Cargo-distributed tools over the GitHub release backend:
 
@@ -93,7 +86,7 @@ steps:
 
 `MISE_RUSTUP_HOME` keeps Rust toolchains and rustup targets under the same cached tree. This matters because mise manages Rust through rustup; Rust does not live under mise's normal `installs/` directory. The official mise Rust docs state that Rust respects `RUSTUP_HOME` and `CARGO_HOME`, and that `MISE_RUSTUP_HOME` and `MISE_CARGO_HOME` can isolate mise's rustup/cargo state from other installations.
 
-`MISE_OVERRIDE_CONFIG_FILENAMES` is required when `mise-action` uses inline `mise_toml` and later build steps run outside `$GITHUB_WORKSPACE`. The action writes inline `mise_toml` to `$GITHUB_WORKSPACE/mise.toml`; it does not write it to `mise_dir`, and `working_directory` does not change where the inline file is written. If the build runs from `/tmp/.../app`, mise's normal upward config search will not find `$GITHUB_WORKSPACE/mise.toml` unless this override is set.
+`MISE_OVERRIDE_CONFIG_FILENAMES` is required when `mise-action` uses inline `mise_toml` and later build steps run outside `$GITHUB_WORKSPACE`. The action writes inline `mise_toml` to `$GITHUB_WORKSPACE/mise.toml`; it does not write it to `mise_dir`, and `working_directory` does not change where the inline file is written. If the build runs from any worktree outside `$GITHUB_WORKSPACE`, mise's normal upward config search will not find `$GITHUB_WORKSPACE/mise.toml` unless this override is set.
 
 If the build worktree is under `$GITHUB_WORKSPACE`, for example `$GITHUB_WORKSPACE/cached-worktree/app`, `MISE_OVERRIDE_CONFIG_FILENAMES` is not needed because mise can discover `$GITHUB_WORKSPACE/mise.toml` naturally. Prefer a descriptive directory name such as `cached-worktree` over `cached` because this workflow also caches mise data, Cargo target directories, and Rust/Cargo state.
 
