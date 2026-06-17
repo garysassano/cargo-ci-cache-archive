@@ -121,7 +121,7 @@ The source key should include a small manual namespace for build-command semanti
 target-key: locked-v1-${{ steps.source-key.outputs.hash }}
 ```
 
-Increment the namespace when changing build flags, target triples, Cargo features, profiles, compiler wrappers, or other options that can affect Cargo fingerprints. If the command changes but the target key does not, Cargo may rebuild against an exact target-cache hit and the cache action will correctly skip saving because the key was exact.
+Increment the namespace when changing build flags, target triples, Cargo features, profiles, compiler wrappers, setup backends, toolchain locations, cached target directories, or other options that can affect Cargo fingerprints. If the command or setup shape changes but the target key does not, Cargo may rebuild against an exact target-cache hit and the cache action will correctly skip saving because the key was exact.
 
 The repeated outliers this fixed were local path workspace members in generated-code/build-script chains. Tight `cargo:rerun-if-changed` hints are still good build-script hygiene, but they do not fix stale exact target-cache restores when the target cache key ignores workspace source state.
 
@@ -136,6 +136,12 @@ Do not assume `--frozen` or `--offline` will work with `rust-cache`. Those modes
 - Produces true Cargo no-op behavior for the tested generated-code and build-script outliers.
 - Keys complete target state by source and build semantics.
 - Keeps Cargo-home dependency caching under maintained `rust-cache` behavior.
+
+## Native Target-Key Prototype
+
+A native `target-key` prototype in a local `rust-cache` fork was also tested against the same workload. It removed the separate `actions/cache` target step by making `rust-cache` split Cargo home and target caches internally. After one seed run, repeated runs restored exact Cargo and target cache hits across tested binary and UI jobs. Cargo produced no `Compiling` lines; remaining build phases were around 0.3 seconds.
+
+This validates the native action design, but the copyable workaround in this page remains the maintained archive example until upstream `Swatinem/rust-cache` releases equivalent support.
 
 ## Limitations
 

@@ -12,6 +12,7 @@ Use this checklist when refreshing the archive or copying its examples into a li
 - Check current GitHub-owned action majors for `actions/checkout`, `actions/cache`, `actions/upload-artifact`, and `actions/download-artifact`.
 - Keep non-GitHub actions intentionally pinned or floating by policy. For example, this archive keeps `Swatinem/rust-cache@v2` and `dtolnay/rust-toolchain@stable` because those are the intended upstream interfaces.
 - Re-check `jdx/mise-action` inputs and cache-key behavior when changing mise setup examples.
+- Re-check where inline `mise_toml` is written and where later build steps run; config discovery is path-sensitive.
 - Run `actionlint examples/workflows/*.yml` when `actionlint` is available.
 - Parse all example YAML files after edits.
 
@@ -21,9 +22,11 @@ Use this checklist when refreshing the archive or copying its examples into a li
 - Re-check the official [Cargo checksum freshness documentation](https://doc.rust-lang.org/nightly/cargo/reference/unstable.html#checksum-freshness) and [tracking issue](https://github.com/rust-lang/cargo/issues/14136) before changing source-mtime guidance.
 - Keep the source-keyed target-cache workaround documented until upstream target keys include workspace source state or an equivalent mechanism exists.
 - When using source-keyed target caches, include build-command semantics in the target key, for example `locked-v1-<source-hash>`, and bump the namespace after changing build flags, target triples, profiles, features, or wrappers.
-- Also bump the target-key namespace after changing setup semantics that affect Cargo's environment, such as moving Rust/rustup home, switching from Rust/Zig installer actions to mise, or changing Cargo helper installation backends.
+- Also bump the target-key namespace after changing setup semantics that affect Cargo's environment, such as moving `MISE_DATA_DIR`, `MISE_RUSTUP_HOME`, cached worktrees, cached target directories, switching from Rust/Zig installer actions to mise, or changing Cargo helper installation backends.
 - Prefer `--locked` for CI artifact builds. Do not switch to `--frozen` / `--offline` with `rust-cache` unless complete local registry/index state is known to be restored.
 - Prefer `mise-action` with inline `mise_toml` for stable setup tools such as Zig, Rust targets, `cargo-lambda`, `trunk`, and `cargo-binstall`; do not rely on `rust-cache cache-bin=true` as the only cache for those tools when setup time matters.
+- Prefer a cached source worktree under `$GITHUB_WORKSPACE`, such as `cached-worktree/app`, so mise can discover `$GITHUB_WORKSPACE/mise.toml` without `MISE_OVERRIDE_CONFIG_FILENAMES`.
+- Do not add `depends = ["rust", "cargo-binstall"]` to Cargo-backed mise tools as a workaround for shim/config discovery failures. Fix the config path instead.
 - Preserve the [canonical compatibility rule](../concepts/cargo-path-coverage.md#compatibility-rule-canonical) against mixing full filesystem snapshots with `rust-cache` on the same `target/` or `$CARGO_HOME` paths.
 
 ## Platform Guidance

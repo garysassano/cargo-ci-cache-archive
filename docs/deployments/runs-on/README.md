@@ -48,7 +48,7 @@ flowchart LR
     subgraph job[GitHub Actions job on RunsOn]
         worktree[actions/cache worktree archive]
         mise[mise-action tool setup]
-        tools[MISE_DATA_DIR and RUSTUP_HOME]
+        tools[MISE_DATA_DIR and MISE_RUSTUP_HOME]
         rust_cache[Swatinem/rust-cache]
         cargo_home[CARGO_HOME registry and Git state]
         target[Cleaned target subset]
@@ -130,7 +130,7 @@ These are the only choices that are specific to deploying on RunsOn rather than 
 | --- | --- | --- |
 | Cache backend | Enable `extras=s3-cache` and run `runs-on/action@v2` before any cache step. | Magic Cache redirects the `actions/cache` protocol to the RunsOn S3 backend for the worktree, mise, and `rust-cache` entries. |
 | `MISE_DATA_DIR` | Stable job-local path such as `${{ github.workspace }}/.mise`. | `mise-action` caches this directory through `actions/cache`, which Magic Cache backs with S3. |
-| `RUSTUP_HOME` | Directory under `MISE_DATA_DIR`. | Keeps the rustup toolchain, components, and targets in the same S3-backed mise cache. |
+| `MISE_RUSTUP_HOME` | Directory under `MISE_DATA_DIR`. | Keeps mise-managed rustup toolchains, components, and targets in the same S3-backed mise cache without changing non-mise rustup behavior. |
 | `CARGO_HOME` | Not under `MISE_DATA_DIR`. | Cargo home can hold registry credentials and is already owned and cleaned by `rust-cache`. |
 | `CARGO_TARGET_DIR` | Explicit stable path. | Keeps restored target paths consistent between jobs on ephemeral runners. |
 
@@ -153,7 +153,7 @@ Use the complete [RunsOn, mise, and `rust-cache` workflow](../../../examples/wor
 
 Use `jdx/mise-action@v4` with inline `mise_toml` as the setup layer for Rust, targets, Zig, `cargo-binstall`, `cargo-lambda`, `trunk`, and similar tools. Its `actions/cache` integration uses the same Magic Cache backend as the worktree and Cargo caches.
 
-Keep Cargo home separate from the mise cache, especially when registry credentials are written there. If source-keyed target caching is in use, bump its namespace after changing toolchain locations, targets, installer backends, wrappers, or build flags.
+Keep Cargo home separate from the mise cache, especially when registry credentials are written there. If source-keyed target caching is in use, bump its namespace after changing toolchain locations, targets, cached worktree/target paths, installer backends, wrappers, or build flags.
 
 See [Mise Tool Setup](../../operations/mise-tool-setup.md) for the copyable configuration, environment variables, ordering, and target-key rules. The [`rust-cache` taiki-e explanation](../../concepts/rust-cache-behavior.md#tool-example-taiki-e-prebuilt-tools) remains useful when maintaining workflows that still use that installer.
 
