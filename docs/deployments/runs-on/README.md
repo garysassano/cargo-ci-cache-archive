@@ -168,5 +168,5 @@ Before changing this platform shape, verify the current RunsOn runner-label synt
 - [Recommended cache approach](../../approaches/rust-cache-mtime-checkout.md)
 - [Mise tool setup](../../operations/mise-tool-setup.md)
 - [Cache primitive boundaries](../../concepts/cache-primitives.md)
-- [`rust-cache` vs EBS snapshot evidence](../../evidence/rust-cache-vs-snapshot.md)
+- [`Swatinem/rust-cache` vs `runs-on/snapshot` evidence](../../evidence/rust-cache-vs-snapshot.md)
 - [Observed RunsOn cache object shape](../../evidence/rust-cache-vs-snapshot.md#magic-cache-object-shape)

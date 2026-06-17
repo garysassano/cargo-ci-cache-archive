@@ -112,7 +112,7 @@ The local snapshot fork added key-based snapshot streams, path-scoped identity, 
 
 ## Evidence
 
-The [`rust-cache` vs EBS snapshot evidence](../evidence/rust-cache-vs-snapshot.md) records the seed/reuse comparison, restored state counts, Cargo log results, interpretation, and incremental-compilation caveat.
+The [`Swatinem/rust-cache` vs `runs-on/snapshot` evidence](../evidence/rust-cache-vs-snapshot.md) records the seed/reuse comparison, restored state counts, Cargo log results, interpretation, and incremental-compilation caveat.
 
 ## Decision
 

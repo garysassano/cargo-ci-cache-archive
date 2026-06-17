@@ -6,7 +6,7 @@ This category preserves the test setup, observations, and interpretation behind 
 
 | Page | Purpose |
 | --- | --- |
-| [`rust-cache` vs EBS snapshot](rust-cache-vs-snapshot.md) | Compares restored Cargo state and repeated-build behavior. |
+| [`Swatinem/rust-cache` vs `runs-on/snapshot`](rust-cache-vs-snapshot.md) | Compares restored Cargo state and repeated-build behavior. |
 | [Cached worktree and source-keyed target cache](cached-worktree-and-target-cache.md) | Records the source-mtime fix, exact-hit outliers, workaround, and native prototype. |
 | [S3 Files experiment](s3-files.md) | Records network-filesystem layouts, timings, setup costs, and interpretation. |
 

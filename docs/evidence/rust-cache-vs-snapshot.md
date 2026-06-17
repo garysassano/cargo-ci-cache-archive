@@ -1,6 +1,6 @@
-# `rust-cache` Vs EBS Snapshot Evidence
+# `Swatinem/rust-cache` Vs `runs-on/snapshot` Evidence
 
-This page records the empirical comparison between `Swatinem/rust-cache` and EBS snapshot-style filesystem restore.
+This page records the empirical comparison between `Swatinem/rust-cache` and the archived `runs-on/snapshot` EBS filesystem-restore approach.
 
 ## Question
 
@@ -25,7 +25,7 @@ The jobs were:
 | Job | Method |
 | --- | --- |
 | `rust-cache-magic-cache` | `Swatinem/rust-cache@v2` using RunsOn Magic Cache as the `actions/cache` backend |
-| `snapshot-cache` | EBS-backed filesystem snapshot restore |
+| `snapshot-cache` | `runs-on/snapshot` EBS-backed filesystem restore |
 
 The workflow captured before/after counts for:
 
@@ -46,7 +46,7 @@ The first run seeded both methods.
 | Run | Method | `Compiling` lines | `Fresh` lines | Fingerprint / dirty indicators |
 | --- | ---: | ---: | ---: | ---: |
 | Seed | `Swatinem/rust-cache` with Magic Cache | 623 | 0 | 1584 |
-| Seed | EBS snapshot | 623 | 0 | 1584 |
+| Seed | `runs-on/snapshot` EBS restore | 623 | 0 | 1584 |
 
 ### Reuse Run
 
@@ -55,11 +55,11 @@ The second run measured reuse.
 | Run | Method | `Compiling` lines | `Fresh` lines | Fingerprint / dirty indicators |
 | --- | ---: | ---: | ---: | ---: |
 | Reuse | `Swatinem/rust-cache` with Magic Cache | 30 | 593 | 72 |
-| Reuse | EBS snapshot | 0 | 623 | 0 |
+| Reuse | `runs-on/snapshot` EBS restore | 0 | 623 | 0 |
 
 ### State Before Second Build
 
-| State before second build | `Swatinem/rust-cache` with Magic Cache | EBS snapshot |
+| State before second build | `Swatinem/rust-cache` with Magic Cache | `runs-on/snapshot` EBS restore |
 | --- | ---: | ---: |
 | Exact cache hit | `true` | not applicable |
 | `CARGO_INCREMENTAL` | `0` | `0` in this workflow |
@@ -82,7 +82,7 @@ The `Swatinem/rust-cache` job recreated additional state during the second build
 | Build-script files | 993 |
 | Registry source files | 38230 |
 
-The EBS snapshot job already had the complete state before the second build and did not need to grow these counts during build.
+The `runs-on/snapshot` job already had the complete state before the second build and did not need to grow these counts during build.
 
 ### Magic Cache Object Shape
 
