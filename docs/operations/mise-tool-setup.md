@@ -14,10 +14,13 @@ This removes the need for several separate setup/install actions and avoids payi
 
 ## Recommended Shape
 
-Use inline `mise_toml` in the workflow when the tool set is CI-specific:
+Use inline `mise_toml` in the workflow when the tool set is CI-specific.
+
+For a Cargo Lambda artifact job:
 
 ```yaml
 env:
+  CACHED_CARGO_TARGET_DIR: ${{ github.workspace }}/cached-cargo-target-${{ matrix.lambda.name }}
   MISE_DATA_DIR: ${{ github.workspace }}/.mise
   MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
 
@@ -32,12 +35,23 @@ steps:
         rust = { version = "stable", components = "rustfmt", targets = "aarch64-unknown-linux-gnu" }
         cargo-binstall = "latest"
         "cargo:cargo-lambda" = "1.9.1"
+
+  - name: Build Lambda Binary
+    env:
+      CARGO_TARGET_DIR: ${{ env.CACHED_CARGO_TARGET_DIR }}
+    run: |
+      cargo lambda build \
+        --bin example_lambda \
+        --release \
+        --locked \
+        --arm64
 ```
 
 For a Trunk/WebAssembly job:
 
 ```yaml
 env:
+  CACHED_CONSOLE_TARGET_DIR: ${{ github.workspace }}/cached-console-ui-target
   MISE_DATA_DIR: ${{ github.workspace }}/.mise
   MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
 
@@ -51,6 +65,11 @@ steps:
         rust = { version = "stable", components = "rustfmt", targets = "wasm32-unknown-unknown" }
         cargo-binstall = "latest"
         "cargo:trunk" = "0.21.14"
+
+  - name: Build Console UI
+    env:
+      CARGO_TARGET_DIR: ${{ env.CACHED_CONSOLE_TARGET_DIR }}
+    run: trunk build --release --locked
 ```
 
 Install `cargo-binstall` first so mise can use prebuilt binaries where available instead of compiling tool CLIs.
