@@ -88,6 +88,7 @@ sequenceDiagram
     S3-->>Magic: Archive
     Magic-->>Job: Extract prior worktree
     Job->>Job: Checkout new commit in place
+    Job->>Job: Configure registry credentials when required
 
     Job->>Magic: mise-action restore
     Magic->>S3: Read mise tool archive

@@ -58,6 +58,7 @@ flowchart TD
     helpers --> build
     build --> scrub --> detach --> save
     save -->|yes| snapshot
+    snapshot --> delete
     save -->|no| delete
 ```
 

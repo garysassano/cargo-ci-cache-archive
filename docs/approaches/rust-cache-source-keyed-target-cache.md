@@ -42,8 +42,8 @@ flowchart TD
     restore_home[Restore Cargo home only]
     cargo_home[CARGO_HOME registry and Git state]
 
-    source_key[Compute key from tracked source state]
-    target_cache[(Source-keyed full target archive)]
+    source_key[Compute source plus<br/>build/setup key]
+    target_cache[(Source and build/setup-keyed<br/>full target archive)]
     restore_target[Restore full target directory]
     target[Artifacts, dep-info, fingerprints, and build outputs]
 

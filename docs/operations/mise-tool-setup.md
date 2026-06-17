@@ -109,7 +109,7 @@ Keep Cargo target directories outside `cached-worktree/app` so source checkout s
 
 ```mermaid
 flowchart TD
-    A[GitHub Actions job starts] --> B[mise-action runs]
+    A[Restore cached worktree and<br/>configure registry credentials] --> B[mise-action runs]
 
     B --> C{mise_dir input set?}
     C -->|Yes| D[Action cache path uses<br/>mise_dir]
