@@ -199,7 +199,12 @@ Tool-cache lesson:
   must run where mise can discover that config. A cached worktree under
   `$GITHUB_WORKSPACE/cached-worktree/app` worked without overrides.
 - With config discovery fixed, `zig = "latest"` and `"cargo:cargo-lambda" = "latest"`
-  were valid setup-tool declarations in the selected workflow.
+  were valid setup-tool declarations, but a warm `mise-action` cache can keep using
+  the previously resolved versions. The selected workflow pins artifact-affecting
+  tools instead so upgrades are explicit, while leaving `cargo-binstall` on
+  `latest` because it is an installer mechanism. Rust stays on `stable` to match
+  the repository's Rust CI unless the repo later adds a checked-in Rust version
+  source.
 - `depends = ["rust", "cargo-binstall"]` on mise Cargo tools is not the fix for
   `No version is set for shim`; that error came from config discovery, not missing
   installation.

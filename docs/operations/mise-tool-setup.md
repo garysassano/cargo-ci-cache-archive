@@ -28,10 +28,10 @@ steps:
       cache: true
       mise_toml: |
         [tools]
-        zig = "latest"
+        zig = "0.16.0"
         rust = { version = "stable", components = "rustfmt", targets = "aarch64-unknown-linux-gnu" }
         cargo-binstall = "latest"
-        "cargo:cargo-lambda" = "latest"
+        "cargo:cargo-lambda" = "1.9.1"
 ```
 
 For a Trunk/WebAssembly job:
@@ -54,6 +54,10 @@ steps:
 ```
 
 Install `cargo-binstall` first so mise can use prebuilt binaries where available instead of compiling tool CLIs.
+
+Pin artifact build tools such as Zig, `cargo-lambda`, and Trunk. `latest` is convenient while experimenting, but a warm `mise-action` cache does not automatically invalidate when a new upstream Zig or Cargo tool release appears. The cache key includes the config text and restored cache path; if `zig = "latest"` previously resolved to `0.16.0`, repeated cached runs can continue using `0.16.0` until the cache key changes or the cache is refreshed. Pinning makes CI artifacts reproducible and makes version changes explicit. `cargo-binstall` is an installer mechanism for Cargo-backed tools, so using `latest` for it is acceptable.
+
+Use `rust = "stable"` unless the repository declares a Rust version in `rust-toolchain.toml` or `workspace.package.rust-version`. This keeps app artifact builds aligned with normal Rust CI that also tracks stable. If the repository adopts a single checked-in Rust version, update the mise config to follow that source of truth.
 
 Do not use `depends = ["rust", "cargo-binstall"]` to compensate for hidden config discovery problems. With the selected `$GITHUB_WORKSPACE/cached-worktree/app` layout, mise can discover the inline `mise_toml` naturally and Cargo-backed setup tools such as `cargo-lambda` work without `depends`.
 
