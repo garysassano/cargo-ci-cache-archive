@@ -20,7 +20,7 @@ For a Cargo Lambda artifact job:
 
 ```yaml
 env:
-  CACHED_CARGO_TARGET_DIR: ${{ github.workspace }}/cached-cargo-target-${{ matrix.lambda.name }}
+  CACHED_CARGO_TARGET_DIR: ${{ github.workspace }}/cached-cargo-target-lambda
   MISE_DATA_DIR: ${{ github.workspace }}/.mise
   MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
 
@@ -51,7 +51,7 @@ For a Trunk/WebAssembly job:
 
 ```yaml
 env:
-  CACHED_CONSOLE_TARGET_DIR: ${{ github.workspace }}/cached-console-ui-target
+  CACHED_CARGO_TARGET_DIR: ${{ github.workspace }}/cached-cargo-target-trunk
   MISE_DATA_DIR: ${{ github.workspace }}/.mise
   MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
 
@@ -66,9 +66,9 @@ steps:
         cargo-binstall = "latest"
         "cargo:trunk" = "0.21.14"
 
-  - name: Build Console UI
+  - name: Build Trunk App
     env:
-      CARGO_TARGET_DIR: ${{ env.CACHED_CONSOLE_TARGET_DIR }}
+      CARGO_TARGET_DIR: ${{ env.CACHED_CARGO_TARGET_DIR }}
     run: trunk build --release --locked
 ```
 
@@ -118,13 +118,12 @@ A clear workspace layout is:
 ```yaml
 env:
   CACHED_WORKTREE: ${{ github.workspace }}/cached-worktree
-  CACHED_CARGO_TARGET_DIR: ${{ github.workspace }}/cached-cargo-target-${{ matrix.lambda.name }}
-  CACHED_CONSOLE_TARGET_DIR: ${{ github.workspace }}/cached-console-ui-target
+  CACHED_CARGO_TARGET_DIR: ${{ github.workspace }}/cached-cargo-target-job
   MISE_DATA_DIR: ${{ github.workspace }}/.mise
   MISE_RUSTUP_HOME: ${{ github.workspace }}/.mise/rustup
 ```
 
-Keep Cargo target directories outside `cached-worktree/app` so source checkout state and build output state remain separate, but keep them under `$GITHUB_WORKSPACE` so all restored/saved CI state is easy to inspect.
+Keep Cargo target directories outside the checked-out workspace under `cached-worktree` so source checkout state and build output state remain separate, but keep them under `$GITHUB_WORKSPACE` so all restored/saved CI state is easy to inspect.
 
 ```mermaid
 flowchart TD
