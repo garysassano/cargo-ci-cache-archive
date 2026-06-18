@@ -13,4 +13,4 @@ This category owns stable explanations of Cargo's build-state model and the cach
 
 ## Page Shape
 
-Concept pages open with a one-line scope statement, then explain the stable model or semantics, then give examples, caveats, and official references where applicable.
+Concept pages open with a one-line scope statement, explain the stable model or semantics, and link to dense reference pages instead of embedding long tables where possible.

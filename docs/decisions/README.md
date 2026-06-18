@@ -33,4 +33,4 @@ The recommended approaches are deployed on RunsOn with Magic Cache. See the [Run
 1. Confirm new measured evidence exists under [`docs/evidence/`](../evidence/README.md).
 2. Record the prior conclusion in [history](history.md) with what changed and why.
 3. Update the affected row or finding above.
-4. Update the brief summaries that link here (root `README.md`, `AGENTS.md`, and any approach page status fields).
+4. Update the brief summaries that link here (root `README.md`, `docs/quickstart.md`, `AGENTS.md`, and any approach page status fields).

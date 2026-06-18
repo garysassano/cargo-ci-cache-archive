@@ -8,6 +8,7 @@ Use the routing table below to load only the pages relevant to the task instead 
 
 | Task | Use |
 | --- | --- |
+| Get the current recommendation quickly | `docs/quickstart.md` |
 | See current conclusions and their status | `docs/decisions/README.md` |
 | See superseded or revised conclusions | `docs/decisions/history.md` |
 | Understand documentation ownership | `docs/README.md` |
@@ -20,6 +21,7 @@ Use the routing table below to load only the pages relevant to the task instead 
 | Explain `Swatinem/rust-cache` inputs and cleanup | `docs/concepts/rust-cache-behavior.md` |
 | Diagnose rebuilds | `docs/operations/diagnosing-rebuilds.md` |
 | Review measured evidence | `docs/evidence/README.md` |
+| Read detailed freshness signals, examples, or historical notes | `docs/reference/README.md` |
 | Refresh examples and assumptions | `docs/operations/maintenance-checklist.md` |
 | Copy workflow shapes | `examples/README.md` and `examples/workflows/` |
 | Understand the local snapshot fork | `examples/actions/snapshot/README.md` |
@@ -39,16 +41,19 @@ Treat the conclusions as archived, not as timeless upstream facts. Before changi
 - Do not maintain a chronological experiment log; move durable findings into the relevant concept, approach, operation, or evidence page.
 - Keep diagnostic procedures in `docs/operations/diagnosing-rebuilds.md`.
 - Keep `Swatinem/rust-cache` input and cleanup semantics in `docs/concepts/rust-cache-behavior.md`.
+- Keep dense technical details, long tables, historical notes, and official-reference collections in `docs/reference/` when they would make first-read pages heavy.
 - Keep RunsOn runner, Magic Cache, and S3 backend guidance in `docs/deployments/runs-on/README.md`, and keep generic Cargo guidance out of it; the deployment links to the canonical approach, concept, and operation pages instead of copying their configuration.
 - Keep copyable workflow examples in `examples/workflows/`.
 - Link to canonical pages instead of repeating long tables or result summaries.
 
 ## Page Conventions
 
-- Concept pages explain stable models and semantics, followed by caveats and official references where applicable.
+- Quickstart and landing pages stay short, opinionated, and link-heavy.
+- Concept pages explain stable models and semantics, then link to reference pages for dense tables or examples.
 - Approach pages use this order where applicable: status summary, related files, design/architecture, operational details, strengths, limitations, evidence, decision.
 - Operation pages contain a purpose, recommended procedure or configuration, ordering, caveats, and references.
 - Evidence pages contain a question, test setup or progression, observations, interpretation, limitations, and implications.
+- Reference pages preserve dense tables, examples, historical notes, and official references.
 - Deployment pages contain an ownership statement, platform-specific deltas, the workflow shape, maintenance notes, and related-page links; they link to generic approach/concept/operation pages instead of restating configuration.
 - Category `README.md` files use a short ownership statement followed by a `Page | Purpose` table or a decision matrix.
 

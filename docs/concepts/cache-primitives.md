@@ -98,9 +98,9 @@ Limitations for Cargo target state:
 
 | Goal | Preferred primitive |
 | --- | --- |
+| Keep workflow simple and maintained | `mise-action` with `Swatinem/rust-cache` and mtime-preserving checkout |
 | Avoid dependency downloads | Archive cache / `rust-cache` |
 | Preserve source mtimes | Cached worktree or filesystem snapshot |
 | Preserve full local target state | Filesystem snapshot or source-keyed target archive |
 | Cache setup tools and toolchains | Archive cache through `mise-action` |
 | Share state across workers without archives | Network filesystem, but not ideal for Cargo target no-op |
-| Keep workflow simple and maintained | `mise-action` with `Swatinem/rust-cache` and mtime-preserving checkout |

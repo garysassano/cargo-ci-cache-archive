@@ -12,4 +12,4 @@ This category owns procedures, configuration guidance, diagnosis, and maintenanc
 
 ## Page Shape
 
-Operation pages open with a one-line purpose statement, then give the recommended procedure or configuration, ordering, caveats, and references.
+Operation pages open with a one-line purpose statement, then give the recommended procedure or configuration, ordering, caveats, and reference links.

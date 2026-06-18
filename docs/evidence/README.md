@@ -15,6 +15,7 @@ This category preserves the test setup, observations, and interpretation behind 
 - Record the test shape, observed values, interpretation, and limitations.
 - Keep current recommendations and tradeoffs in [`docs/approaches/`](../approaches/README.md).
 - Keep procedures in [`docs/operations/`](../operations/README.md).
+- Keep dense reusable technical detail in [`docs/reference/`](../reference/README.md) when it would make a first-read page heavy.
 - Prefer focused evidence records over a chronological experiment diary.
 
 ## Page Shape

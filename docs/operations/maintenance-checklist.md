@@ -5,7 +5,7 @@ Use this checklist when refreshing the archive or copying its examples into a li
 ## Decisions
 
 - When a conclusion in [`docs/decisions/README.md`](../decisions/README.md) changes, append the prior conclusion to [`docs/decisions/history.md`](../decisions/history.md) before overwriting it, including what changed and the evidence or upstream change that prompted it.
-- After updating a decision, update the brief summaries that link to it: the root `README.md`, `AGENTS.md`, and any approach page status field.
+- After updating a decision, update the brief summaries that link to it: the root `README.md`, `docs/quickstart.md`, `AGENTS.md`, and any approach page status field.
 
 ## Example Versions
 
