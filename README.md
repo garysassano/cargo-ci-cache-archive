@@ -1,6 +1,6 @@
-# Cargo CI Cache Archive
+# Knowledge: Cargo CI Cache
 
-This repository preserves Rust/Cargo CI cache research, decisions, evidence, and copyable GitHub Actions examples.
+Agent-oriented reference notes, decisions, evidence, and copyable GitHub Actions examples for Rust/Cargo CI cache behavior.
 
 ## Current Answer
 
